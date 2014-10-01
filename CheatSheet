@@ -1,0 +1,11 @@
+# DB setup / modify
+$ python27 manage.py migrate
+
+# setup migration
+$ python27 manage.py makemigrations polls
+
+# 
+$ python manage.py createsuperuser
+
+# copy static files
+$ python manage.py collectstatic
