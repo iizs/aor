@@ -2,6 +2,31 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
 
+AREA_I          = '1'
+AREA_II         = '2'
+AREA_III        = '3'
+AREA_IV         = '4'
+AREA_V          = '5'
+AREA_VI         = '6'
+AREA_VII        = '7'
+AREA_VIII       = '8'
+AREA_FAR_EAST   = 'F'
+AREA_NEW_WROLD  = 'N'
+AREA_ND         = 'X'
+AREA = (
+    (AREA_I, 'I'),
+    (AREA_II, 'II'),
+    (AREA_III, 'III'),
+    (AREA_IV, 'IV'),
+    (AREA_V, 'V'),
+    (AREA_VI, 'VI'),
+    (AREA_VII, 'VII'),
+    (AREA_VIII, 'VIII'),
+    (AREA_FAR_EAST, 'Far East'),
+    (AREA_NEW_WROLD, 'New World'),
+    (AREA_ND, 'Not Defined'),
+)
+
 class Edition(models.Model):
     name = models.CharField(max_length=20)
 
@@ -26,31 +51,6 @@ class Province(models.Model):
         (SATELLITE, 'Satellite'),
     )
 
-    AREA_I          = '1'
-    AREA_II         = '2'
-    AREA_III        = '3'
-    AREA_IV         = '4'
-    AREA_V          = '5'
-    AREA_VI         = '6'
-    AREA_VII        = '7'
-    AREA_VIII       = '8'
-    AREA_FAR_EAST   = 'F'
-    AREA_NEW_WROLD  = 'N'
-    AREA_ND         = 'X'
-    AREA = (
-        (AREA_I, 'I'),
-        (AREA_II, 'II'),
-        (AREA_III, 'III'),
-        (AREA_IV, 'IV'),
-        (AREA_V, 'V'),
-        (AREA_VI, 'VI'),
-        (AREA_VII, 'VII'),
-        (AREA_VIII, 'VIII'),
-        (AREA_FAR_EAST, 'Far East'),
-        (AREA_NEW_WROLD, 'New World'),
-        (AREA_ND, 'Not Defined'),
-    )
-
     edition = models.ForeignKey('Edition')
     area = models.CharField(max_length=1, choices=AREA)
     full_name = models.CharField(max_length=20)
@@ -72,7 +72,7 @@ class Province(models.Model):
     # for list_display() in admin page
     def get_all_supports(self):
         return ', '.join([p.full_name for p in self.supports.all()])
-    get_all_supports.short_description = 'Supports'
+    get_all_supports.short_description = 'Supported / Supports'
 
     # for list_display() in admin page
     def get_all_connected(self):
@@ -111,9 +111,24 @@ class Water(models.Model):
     )
 
     edition = models.ForeignKey('Edition')
-    full_name = models.CharField(max_length=20)
+    area = models.CharField(max_length=1, choices=AREA)
+    full_name = models.CharField(max_length=30)
     short_name = models.CharField(max_length=10)
     water_type =  models.CharField(max_length=1, choices=WATER_TYPE)
-    coast_of = models.ForeignKey('Province', null=True)
-    connected = models.ManyToManyField('self', null=True)
+    coast_of = models.ForeignKey('Province', null=True, blank=True)
+    connected = models.ManyToManyField('self', null=True, blank=True)
+
+    def __unicode__(self):
+        return self.full_name
+
+    # for list_display() in admin page
+    def get_all_connected(self):
+        return ', '.join([w.full_name for w in self.connected.all()])
+    get_all_connected.short_description = 'Connected'
+
+    class Meta:
+        unique_together = (
+            ("edition", "full_name"),
+            ("edition", "short_name"),
+        )
     

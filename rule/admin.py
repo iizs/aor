@@ -24,7 +24,21 @@ class ProvinceAdmin(admin.ModelAdmin):
         models.ManyToManyField: {'widget': SelectMultiple(attrs={'size':'10'}) },
     }
 
+class WaterAdmin(admin.ModelAdmin):
+    list_display = (
+        'full_name', 
+        'area', 
+        'short_name', 
+        'water_type', 
+        'get_all_connected', 
+        'edition', 
+    )
+
+    formfield_overrides = {
+        models.ManyToManyField: {'widget': SelectMultiple(attrs={'size':'10'}) },
+    }
+
 admin.site.register(Edition)
 admin.site.register(Commodity, CommodityAdmin)
 admin.site.register(Province, ProvinceAdmin)
-admin.site.register(Water)
+admin.site.register(Water, WaterAdmin)
