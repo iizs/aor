@@ -1,7 +1,7 @@
 from django.conf.urls import patterns, url
 
-from rule import views
+from ui import views
 
 urlpatterns = patterns('',
-    url(r'^getMap/$', views.getMap),
+    url(r'^map/$', views.showMap),
 )

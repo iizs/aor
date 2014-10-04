@@ -1,0 +1,21 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+{% load staticfiles %}
+
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>AoR map test</title>
+    <link rel="stylesheet" href="{% static 'ui/map.css' %}" type="text/css" charset="utf-8">
+</head>
+<body>
+    {{ request.path }}
+    <div id="maps"></div>
+    <!--<input type='hidden' id='map_url' value='/aor/static/ui/map.json'/>-->
+    <input type='hidden' id='map_url' value='http://iizs.net/aor/api/v1/rule/getMap/?edition=european'/>
+    <canvas id="viewport" width="800" height="600"></canvas>
+    <script src="{% static 'ui/jquery-1.6.1.min.js' %}"></script>
+    <script src="{% static 'ui/arbor.js' %}"></script>
+    <script src="{% static 'ui/map.js' %}"></script>
+    <!--<div id="dataset">Map http://arborjs.org/ 를 참고함</div>-->
+</body>
+</html>
