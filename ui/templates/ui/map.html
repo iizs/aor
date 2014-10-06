@@ -9,13 +9,11 @@
 </head>
 <body>
     {{ request.path }}
-    <div id="maps"></div>
     <!--<input type='hidden' id='map_url' value='/aor/static/ui/map.json'/>-->
     <input type='hidden' id='map_url' value='http://iizs.net/aor/api/v1/rule/getMap/?edition=european'/>
-    <canvas id="viewport" width="800" height="600"></canvas>
+    <div id="cy" ></div>
     <script src="{% static 'ui/jquery-1.6.1.min.js' %}"></script>
-    <script src="{% static 'ui/arbor.js' %}"></script>
+    <script src="{% static 'ui/cytoscape.js' %}"></script>
     <script src="{% static 'ui/map.js' %}"></script>
-    <!--<div id="dataset">Map http://arborjs.org/ 를 참고함</div>-->
 </body>
 </html>
