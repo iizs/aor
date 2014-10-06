@@ -151,7 +151,7 @@
 
       	$(window).bind('mouseup',function(e){
           if (dragged===null || dragged.node===undefined) return
-          dragged.node.fixed = false
+          //dragged.node.fixed = false
           dragged.node.tempMass = 100
       		dragged = null;
       		selected = null
@@ -166,13 +166,11 @@
   } // end of Renderer
   
   var Maps = function(elt){
-    var sys = arbor.ParticleSystem({repulsion:20000, stiffness:1000, friction:0.5, fps:55, gravity:true})
+    var sys = arbor.ParticleSystem({repulsion:0, stiffness:0, friction:0.5, fps:55, gravity:true})
     sys.renderer = Renderer("#viewport") // our newly created renderer will have its .init() method called shortly by sys...
     
     var that = {
       init:function(){
-        //$.getJSON("/aor/static/ui/area_i.json",function(data){
-        //$.getJSON("/aor/static/ui/map.json",function(data){
         $.getJSON($('#map_url').val(),function(data){
           var province_map = []
           var water_map = []
@@ -184,7 +182,14 @@
           for (var i in data.provinces) {
               var p = data.provinces[i]
               province_map[p.pk] = p.fields.full_name
-              nodes[p.fields.full_name] = { label: p.fields.full_name, mass: 10, fixed: true}
+              nodes[p.fields.full_name] = { 
+                  label: p.fields.full_name, 
+                  mass: 10, 
+                  fixed: true,
+                  x: 100, y:100
+                  //x: (p.fields.x > 0 ? p.fields.x: 0 ),
+                  //y: (p.fields.y > 0 ? p.fields.y: 0 )
+              }
           }
 
           // add all land connection to edges
@@ -222,8 +227,10 @@
                 w_label = w_name
               }
               water_map[w.pk] = w_name
-              nodes[w_name] = {}
-              nodes[w_name].label = w_label
+              nodes[w_name] = {
+                  label: w_label,
+                  fixed: true
+              }
           }
 
           // add all sea connections

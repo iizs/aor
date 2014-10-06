@@ -17,6 +17,8 @@ class ProvinceAdmin(admin.ModelAdmin):
         'get_all_commodities', 
         'get_all_connected', 
         'get_all_supports', 
+        'x',
+        'y',
         'edition', 
     )
 

@@ -60,6 +60,8 @@ class Province(models.Model):
     commodities = models.ManyToManyField('Commodity', null=True, blank=True)
     supports = models.ManyToManyField('self', null=True, blank=True)
     connected = models.ManyToManyField('self', null=True, blank=True)
+    x = models.SmallIntegerField(default=0)
+    y = models.SmallIntegerField(default=0)
 
     def __unicode__(self):
         return self.full_name
