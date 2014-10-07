@@ -199,7 +199,7 @@ $(document).ready(function(){
             var w_pk = map_data.waters[i].pk;
 
             for (var j in w.connected ) {
-                if ( w.connected[j] > p_pk && w.connected[j] in water_map ) {
+                if ( w.connected[j] > w_pk && w.connected[j] in water_map ) {
                     sea_edge.push({
                         data: { 
                             id: 'S_' + w.short_name + '_' + water_map[w.connected[j]], 
