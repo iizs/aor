@@ -153,11 +153,11 @@ $(document).ready(function(){
             var w = map_data.waters[i].fields;
             var w_pk = map_data.waters[i].pk;
 
-            water_map[w_pk] = w.short_name;
+            water_map[w_pk] = w;
             if ( w.water_type == 'S' ) {
                 seas.push({
                     data: { 
-                        id: w.short_name, 
+                        id: 'S' + w.short_name, 
                         name: ( skin_node_map[w.short_name].data.name == undefined ? 
                                 w.full_name : skin_node_map[w.short_name].data.name ), 
                         x_ratio: skin_node_map[w.short_name].position.x / x_max,
@@ -172,10 +172,10 @@ $(document).ready(function(){
                 });
             } else {
                 // coast 
-                if ( w.short_name != province_map[w.coast_of] ) {
+                //if ( w.short_name != province_map[w.coast_of] ) {
                     seas.push({
                         data: { 
-                            id: w.short_name, 
+                            id: 'C' + w.short_name, 
                             name: "",
                             x_ratio: skin_node_map[province_map[w.coast_of]].position.x / x_max,
                             y_ratio: skin_node_map[province_map[w.coast_of]].position.y / y_max,
@@ -187,7 +187,7 @@ $(document).ready(function(){
                         locked: true,
                         classes: 'coast'
                     });
-                }
+                //}
             }
         }
         cy.add( {nodes:seas} );
@@ -202,9 +202,9 @@ $(document).ready(function(){
                 if ( w.connected[j] > w_pk && w.connected[j] in water_map ) {
                     sea_edge.push({
                         data: { 
-                            id: 'S_' + w.short_name + '_' + water_map[w.connected[j]], 
-                            source: w.short_name, 
-                            target: water_map[w.connected[j]] 
+                            id: 'S_' + w.short_name + '_' + water_map[w.connected[j]].short_name, 
+                            source: w.water_type + w.short_name, 
+                            target: water_map[w.connected[j]].water_type + water_map[w.connected[j]].short_name,
                         },
                         classes: 'sea',
                     });
