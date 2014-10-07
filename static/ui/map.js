@@ -9,14 +9,37 @@ $('#cy').cytoscape({
   style: cytoscape.stylesheet()
     .selector('node')
       .css({
-        //'shape': 'data(faveShape)',
-        'width': 'mapData(weight, 40, 80, 20, 60)',
+        //'width': 'mapData(weight, 40, 80, 20, 60)',
         'content': 'data(name)',
         'text-valign': 'center',
-        'text-outline-width': 2,
+        'text-outline-width': 1,
         //'text-outline-color': 'data(faveColor)',
         //'background-color': 'data(faveColor)',
-        'color': '#fff'
+        'color': '#ffffff'
+      })
+    .selector('node.province')
+      .css({
+          'shape': 'ellipse',
+          'width': 40,
+          'height': 40,
+      })
+    .selector('node.satellite')
+      .css({
+          'shape': 'rectangle',
+          'width': 20,
+          'height': 20,
+      })
+    .selector('node.fareast')
+      .css({
+          'shape': 'rectangle',
+          'width': 30,
+          'height': 70,
+      })
+    .selector('node.newworld')
+      .css({
+          'shape': 'rectangle',
+          'width': 30,
+          'height': 70,
       })
     .selector(':selected')
       .css({
@@ -25,22 +48,29 @@ $('#cy').cytoscape({
       })
     .selector('edge')
       .css({
-        'width': 'mapData(strength, 70, 100, 2, 6)',
-        'target-arrow-shape': 'triangle',
-        'source-arrow-shape': 'circle',
-        'line-color': 'data(faveColor)',
-        'source-arrow-color': 'data(faveColor)',
-        'target-arrow-color': 'data(faveColor)'
+        'width': 5,
+        //'width': 'mapData(strength, 70, 100, 2, 6)',
+        //'target-arrow-shape': 'triangle',
+        //'source-arrow-shape': 'circle',
+        //'line-color': 'data(faveColor)',
+        //'source-arrow-color': 'data(faveColor)',
+        //'target-arrow-color': 'data(faveColor)'
       })
-    .selector('edge.questionable')
+    .selector('edge.inland')
+      .css({
+        'line-color': '#cc9900',
+        'width': 5,
+      })
+    .selector('edge.sea')
       .css({
         'line-style': 'dotted',
-        'target-arrow-shape': 'diamond'
+        'line-color': '#0099ff',
+        'width': 30,
       })
-    .selector('.faded')
+    .selector('edge.support')
       .css({
-        'opacity': 0.25,
-        'text-opacity': 0
+        'line-color': '#000000',
+        'target-arrow-shape': 'triangle'
       }),
   ready: function(){
     window.cy = this;
@@ -56,15 +86,63 @@ $('#cy').cytoscape({
 });
 
 $(document).ready(function(){
+    $.getJSON($('#map_url').val(),function(data) {
+        var cy = $('#cy').cytoscape('get');
+        var province_map = [];
+        var x_max = 1137;   // HARDCODED
+        var y_max = 876;    // HARDCODED
+
+        // add all provinces to nodes 
+        var provinces = []
+        for (var i in data.provinces) {
+            var p = data.provinces[i].fields;
+            var p_pk = data.provinces[i].pk;
+
+            province_map[p_pk] = p.short_name;
+            provinces.push({
+                data: { id: p.short_name, name: p.full_name },
+                position: { x: p.x /*/ x_max * cy.width()*/, y: p.y /*/ y_max * cy.height()*/ },
+                locked: true,
+                classes: ( p.market_size == 1 ? 'satellite' : ( p.area == 'F' ? 'fareast' : ( p.area == 'N' ? 'newworld' : 'province' ) ) ),
+            });
+        }
+        cy.add( {nodes:provinces} );
+
+        // add inland edge
+        var inland_edge = []
+        for (var i in data.provinces) {
+            var p = data.provinces[i].fields;
+            var p_pk = data.provinces[i].pk;
+
+            //for (var j=0; p.connected != undefined && j < p.connected.length; ++j ) {
+            for (var j in p.connected ) {
+                if ( p.connected[j] > p_pk && p.connected[j] in province_map ) {
+                    inland_edge.push({
+                        data: { 
+                            id: p.short_name + '_' + province_map[p.connected[j]], 
+                            source: p.short_name, 
+                            target: province_map[p.connected[j]] 
+                        },
+                        classes: 'inland',
+                    });
+                }
+            }
+        }
+        cy.add( {edges:inland_edge} );
+        //$('#json').text( cy.json() );
+        console.log( JSON.stringify({nodes:provinces, edges:inland_edge} ));
+    });
+    /*
     var cy = $('#cy').cytoscape('get');
-    cy.add([
-         { group: "nodes", data: { id: 'h', name: 'iizs' }, position: {x:100, y:0}, locked: true },
-         { group: "nodes", data: { id: 'k', name: 'inome'} },
-         { group: "nodes", data: { id: 'a', name: 'inome2'} },
-    ]);
+    cy.add({ nodes: [
+         { data: { id: 'h', name: 'iizs' }, position: {x:100, y:0}, locked: true },
+         { data: { id: 'k', name: 'inome'} },
+         { data: { id: 'a', name: 'inome2'} }
+    ]});
     //cy.getElementById('h').position( {x:0, y:0} );
     cy.getElementById('k').position( {x:100, y:100} );
     cy.getElementById('a').position( {x:0, y:100} );
+    */
 })
 
 }); // on dom ready
