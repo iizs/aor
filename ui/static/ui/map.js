@@ -86,22 +86,34 @@ $('#cy').cytoscape({
 });
 
 $(document).ready(function(){
-    $.getJSON($('#map_url').val(),function(data) {
+    var skin_data, map_data;
+
+    $.when(
+        $.getJSON($('#skin_url').val(), function(data) {
+            skin_data = data;
+        }).fail( function(data, textStatus, error) {
+            console.error("getJSON(#skin_url) failed, status: " + textStatus + ", error: "+error)
+        }),  
+        $.getJSON($('#map_url').val(), function(data) {
+            map_data = data;
+        }).fail( function(data, textStatus, error) {
+            console.error("getJSON(#map_url) failed, status: " + textStatus + ", error: "+error)
+        })
+    ).then( function() {
         var cy = $('#cy').cytoscape('get');
         var province_map = [];
-        var x_max = 1137;   // HARDCODED
-        var y_max = 876;    // HARDCODED
-
+        var x_max = skin_data.map_area.x_max;
+        var y_max = skin_data.map_area.y_max;
         // add all provinces to nodes 
         var provinces = []
-        for (var i in data.provinces) {
-            var p = data.provinces[i].fields;
-            var p_pk = data.provinces[i].pk;
+        for (var i in map_data.provinces) {
+            var p = map_data.provinces[i].fields;
+            var p_pk = map_data.provinces[i].pk;
 
             province_map[p_pk] = p.short_name;
             provinces.push({
                 data: { id: p.short_name, name: p.full_name },
-                position: { x: p.x /*/ x_max * cy.width()*/, y: p.y /*/ y_max * cy.height()*/ },
+                position: { x: p.x / x_max * cy.width(), y: p.y / y_max * cy.height() },
                 locked: true,
                 classes: ( p.market_size == 1 ? 'satellite' : ( p.area == 'F' ? 'fareast' : ( p.area == 'N' ? 'newworld' : 'province' ) ) ),
             });
@@ -110,9 +122,9 @@ $(document).ready(function(){
 
         // add inland edge
         var inland_edge = []
-        for (var i in data.provinces) {
-            var p = data.provinces[i].fields;
-            var p_pk = data.provinces[i].pk;
+        for (var i in map_data.provinces) {
+            var p = map_data.provinces[i].fields;
+            var p_pk = map_data.provinces[i].pk;
 
             //for (var j=0; p.connected != undefined && j < p.connected.length; ++j ) {
             for (var j in p.connected ) {
@@ -130,7 +142,7 @@ $(document).ready(function(){
         }
         cy.add( {edges:inland_edge} );
         //$('#json').text( cy.json() );
-        console.log( JSON.stringify({nodes:provinces, edges:inland_edge} ));
+        //console.log( JSON.stringify({nodes:provinces, edges:inland_edge} ));
     });
     /*
     var cy = $('#cy').cytoscape('get');

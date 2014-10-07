@@ -11,6 +11,8 @@
     {{ request.path }}
     <!--<input type='hidden' id='map_url' value='/aor/static/ui/map.json'/>-->
     <input type='hidden' id='map_url' value='http://iizs.net/aor/api/v1/rule/getMap/?edition=european'/>
+    <input type='hidden' id='skin_url' value="http://iizs.net/aor/static/ui/skins/european/default.json"/>
+    <!--<input type='hidden' id='skin_url' value="{% static 'ui/skins/european/default.json' %}"/>-->
     <div id="cy" ></div>
     <div id="json" ></div>
     <script src="{% static 'ui/jquery-1.6.1.min.js' %}"></script>
