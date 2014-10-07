@@ -41,6 +41,14 @@ $('#cy').cytoscape({
           'width': 30,
           'height': 70,
       })
+    .selector('node.sea')
+      .css({
+          'shape': 'rectangle',
+          'background-color': '#ffffff',
+          'color': '#000000',
+          'width': 10,
+          'height': 10,
+      })
     .selector(':selected')
       .css({
         'border-width': 3,
@@ -74,14 +82,6 @@ $('#cy').cytoscape({
       }),
   ready: function(){
     window.cy = this;
-/*
-    var cy = $('#cy').cytoscape('get');
-    cy.add([
-         { group: "nodes", data: { id: 'a', name: 'a' } },
-         { group: "nodes", data: { id: 'b', name: 'b'} },
-    ]);
-*/
-    // giddy up
   }
 });
 
@@ -102,8 +102,18 @@ $(document).ready(function(){
     ).then( function() {
         var cy = $('#cy').cytoscape('get');
         var province_map = [];
+        var water_map = [];
+        var skin_node_map = [];
+
         var x_max = skin_data.map_area.x_max;
         var y_max = skin_data.map_area.y_max;
+
+        // fill skin_node_map
+        for (var i in skin_data.nodes) {
+            var n = skin_data.nodes[i];
+            skin_node_map[n.data.id] = n;
+        }
+
         // add all provinces to nodes 
         var provinces = []
         for (var i in map_data.provinces) {
@@ -112,13 +122,51 @@ $(document).ready(function(){
 
             province_map[p_pk] = p.short_name;
             provinces.push({
-                data: { id: p.short_name, name: p.full_name },
-                position: { x: p.x / x_max * cy.width(), y: p.y / y_max * cy.height() },
+                data: { 
+                    id: p.short_name, 
+                    name: ( skin_node_map[p.short_name].data.name == undefined ? 
+                            p.full_name : skin_node_map[p.short_name].data.name ), 
+                    x_ratio: skin_node_map[p.short_name].position.x / x_max,
+                    y_ratio: skin_node_map[p.short_name].position.y / y_max,
+                },
+                position: { 
+                    x: skin_node_map[p.short_name].position.x / x_max * cy.width(), 
+                    y: skin_node_map[p.short_name].position.y / y_max * cy.height() 
+                },
                 locked: true,
-                classes: ( p.market_size == 1 ? 'satellite' : ( p.area == 'F' ? 'fareast' : ( p.area == 'N' ? 'newworld' : 'province' ) ) ),
+                classes: ( p.market_size == 1 ? 'satellite' : 
+                            ( p.area == 'F' ? 'fareast' : 
+                                ( p.area == 'N' ? 'newworld' : 'province' ) ) ),
             });
         }
         cy.add( {nodes:provinces} );
+
+        // add all seas to nodes 
+        var seas = []
+        for (var i in map_data.waters) {
+            var w = map_data.waters[i].fields;
+            var w_pk = map_data.waters[i].pk;
+
+            water_map[w_pk] = w.short_name;
+            if ( w.water_type == 'S' ) {
+                seas.push({
+                    data: { 
+                        id: w.short_name, 
+                        name: ( skin_node_map[w.short_name].data.name == undefined ? 
+                                w.full_name : skin_node_map[w.short_name].data.name ), 
+                        x_ratio: skin_node_map[w.short_name].position.x / x_max,
+                        y_ratio: skin_node_map[w.short_name].position.y / y_max,
+                    },
+                    position: { 
+                        x: skin_node_map[w.short_name].position.x / x_max * cy.width(), 
+                        y: skin_node_map[w.short_name].position.y / y_max * cy.height() 
+                    },
+                    locked: true,
+                    classes: 'sea'
+                });
+            }
+        }
+        cy.add( {nodes:seas} );
 
         // add inland edge
         var inland_edge = []
@@ -126,12 +174,11 @@ $(document).ready(function(){
             var p = map_data.provinces[i].fields;
             var p_pk = map_data.provinces[i].pk;
 
-            //for (var j=0; p.connected != undefined && j < p.connected.length; ++j ) {
             for (var j in p.connected ) {
                 if ( p.connected[j] > p_pk && p.connected[j] in province_map ) {
                     inland_edge.push({
                         data: { 
-                            id: p.short_name + '_' + province_map[p.connected[j]], 
+                            id: 'L_' + p.short_name + '_' + province_map[p.connected[j]], 
                             source: p.short_name, 
                             target: province_map[p.connected[j]] 
                         },

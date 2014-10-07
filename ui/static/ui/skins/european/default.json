@@ -5,2494 +5,1204 @@
     },
     "nodes": [
         {
-            "classes": "province", 
             "data": {
                 "id": "Ham", 
                 "name": "Hamburug"
             }, 
-            "locked": true, 
             "position": {
                 "x": 408, 
                 "y": 294
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Lub", 
                 "name": "Lubeck"
             }, 
-            "locked": true, 
             "position": {
                 "x": 453, 
                 "y": 275
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Ste", 
                 "name": "Stettin"
             }, 
-            "locked": true, 
             "position": {
                 "x": 506, 
                 "y": 245
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Dan", 
                 "name": "Danzig"
             }, 
-            "locked": true, 
             "position": {
                 "x": 600, 
                 "y": 215
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Mit", 
                 "name": "Mitau"
             }, 
-            "locked": true, 
             "position": {
                 "x": 639, 
                 "y": 160
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Rig", 
                 "name": "Riga"
             }, 
-            "locked": true, 
             "position": {
                 "x": 673, 
                 "y": 140
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Nov", 
                 "name": "Novgorod"
             }, 
-            "locked": true, 
             "position": {
                 "x": 720, 
                 "y": 120
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Cop", 
                 "name": "Copenhagen"
             }, 
-            "locked": true, 
             "position": {
                 "x": 393, 
                 "y": 187
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Mal", 
                 "name": "Malmo"
             }, 
-            "locked": true, 
             "position": {
-                "x": 430, 
+                "x": 400, 
                 "y": 85
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Sto", 
                 "name": "Stockholm"
             }, 
-            "locked": true, 
             "position": {
-                "x": 490, 
+                "x": 460, 
                 "y": 80
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Whi", 
                 "name": "Whisby"
             }, 
-            "locked": true, 
             "position": {
-                "x": 550, 
-                "y": 102
+                "x": 520, 
+                "y": 120
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Kon", 
                 "name": "Kongsberg"
             }, 
-            "locked": true, 
             "position": {
                 "x": 351, 
                 "y": 123
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Ber", 
                 "name": "Bergen"
             }, 
-            "locked": true, 
             "position": {
                 "x": 320, 
                 "y": 56
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "She", 
                 "name": "Shetland"
             }, 
-            "locked": true, 
             "position": {
-                "x": 175, 
+                "x": 190, 
                 "y": 125
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Ice", 
                 "name": "Iceland"
             }, 
-            "locked": true, 
             "position": {
-                "x": 100, 
-                "y": 150
+                "x": 60, 
+                "y": 100
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Edi", 
                 "name": "Edinburg"
             }, 
-            "locked": true, 
             "position": {
                 "x": 145, 
                 "y": 230
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Yor", 
                 "name": "York"
             }, 
-            "locked": true, 
             "position": {
                 "x": 200, 
-                "y": 275
+                "y": 255
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Lon", 
                 "name": "London"
             }, 
-            "locked": true, 
             "position": {
                 "x": 245, 
                 "y": 325
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Por", 
                 "name": "Portsmouth"
             }, 
-            "locked": true, 
             "position": {
                 "x": 220, 
                 "y": 360
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Cor", 
                 "name": "Cornwall"
             }, 
-            "locked": true, 
             "position": {
                 "x": 170, 
                 "y": 400
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Che", 
                 "name": "Chester"
             }, 
-            "locked": true, 
             "position": {
                 "x": 200, 
                 "y": 320
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Wal", 
                 "name": "Wales"
             }, 
-            "locked": true, 
             "position": {
                 "x": 170, 
                 "y": 350
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Arm", 
                 "name": "Armagh"
             }, 
-            "locked": true, 
             "position": {
                 "x": 100, 
-                "y": 310
+                "y": 270
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Wat", 
                 "name": "Waterford"
             }, 
-            "locked": true, 
             "position": {
                 "x": 100, 
                 "y": 350
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Bre", 
                 "name": "Breslau"
             }, 
-            "locked": true, 
             "position": {
                 "x": 565, 
                 "y": 275
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Pra", 
                 "name": "Prague"
             }, 
-            "locked": true, 
             "position": {
                 "x": 490, 
                 "y": 345
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Nur", 
                 "name": "Nuremberg"
             }, 
-            "locked": true, 
             "position": {
                 "x": 455, 
                 "y": 380
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Col", 
                 "name": "Cologne"
             }, 
-            "locked": true, 
             "position": {
                 "x": 410, 
                 "y": 360
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Ams", 
                 "name": "Amsterdam"
             }, 
-            "locked": true, 
             "position": {
                 "x": 360, 
                 "y": 315
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Bru", 
                 "name": "Bruges"
             }, 
-            "locked": true, 
             "position": {
                 "x": 360, 
                 "y": 360
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Par", 
                 "name": "Paris"
             }, 
-            "locked": true, 
             "position": {
                 "x": 320, 
                 "y": 410
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "StM", 
                 "name": "St.Malo"
             }, 
-            "locked": true, 
             "position": {
                 "x": 215, 
                 "y": 450
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Loi", 
                 "name": "Loire"
             }, 
-            "locked": true, 
             "position": {
                 "x": 280, 
                 "y": 450
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Dij", 
                 "name": "Dijon"
             }, 
-            "locked": true, 
             "position": {
                 "x": 355, 
                 "y": 465
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Bas", 
                 "name": "Basel"
             }, 
-            "locked": true, 
             "position": {
                 "x": 420, 
                 "y": 440
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "StG", 
                 "name": "St.Gali"
             }, 
-            "locked": true, 
             "position": {
                 "x": 465, 
                 "y": 430
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Str", 
                 "name": "Strassburg"
             }, 
-            "locked": true, 
             "position": {
                 "x": 390, 
                 "y": 410
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Slz", 
                 "name": "Salzburg"
             }, 
-            "locked": true, 
             "position": {
                 "x": 515, 
                 "y": 400
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Vie", 
                 "name": "Vienna"
             }, 
-            "locked": true, 
             "position": {
                 "x": 580, 
                 "y": 375
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Bud", 
                 "name": "Budapest"
             }, 
-            "locked": true, 
             "position": {
                 "x": 620, 
                 "y": 380
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Ess", 
                 "name": "Esseg"
             }, 
-            "locked": true, 
             "position": {
                 "x": 600, 
                 "y": 425
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Bsq", 
                 "name": "Basque"
             }, 
-            "locked": true, 
             "position": {
                 "x": 300, 
                 "y": 605
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Bar", 
                 "name": "Barcelona"
             }, 
-            "locked": true, 
             "position": {
                 "x": 355, 
                 "y": 610
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Val", 
                 "name": "Valencia"
             }, 
-            "locked": true, 
             "position": {
                 "x": 315, 
                 "y": 685
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Tol", 
                 "name": "Toledo"
             }, 
-            "locked": true, 
             "position": {
                 "x": 255, 
                 "y": 660
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Lis", 
                 "name": "Lisbon"
             }, 
-            "locked": true, 
             "position": {
                 "x": 190, 
                 "y": 720
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Leo", 
                 "name": "Leon"
             }, 
-            "locked": true, 
             "position": {
                 "x": 190, 
                 "y": 640
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Pal", 
                 "name": "Palma"
             }, 
-            "locked": true, 
             "position": {
                 "x": 365, 
                 "y": 700
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Kie", 
                 "name": "Kiev"
             }, 
-            "locked": true, 
             "position": {
                 "x": 835, 
                 "y": 250
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Kaf", 
                 "name": "Kaffa"
             }, 
-            "locked": true, 
             "position": {
                 "x": 910, 
                 "y": 330
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Var", 
                 "name": "Varna"
             }, 
-            "locked": true, 
             "position": {
                 "x": 820, 
                 "y": 425
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Ang", 
                 "name": "Angora"
             }, 
-            "locked": true, 
             "position": {
                 "x": 950, 
                 "y": 490
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Tre", 
                 "name": "Trebizond"
             }, 
-            "locked": true, 
             "position": {
                 "x": 1020, 
                 "y": 480
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Erz", 
                 "name": "Erzerum"
             }, 
-            "locked": true, 
             "position": {
                 "x": 1085, 
                 "y": 475
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Pot", 
                 "name": "Poti"
             }, 
-            "locked": true, 
             "position": {
                 "x": 1085, 
                 "y": 405
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Aba", 
                 "name": "Abasigia"
             }, 
-            "locked": true, 
             "position": {
                 "x": 1035, 
                 "y": 375
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Tan", 
                 "name": "Tana"
             }, 
-            "locked": true, 
             "position": {
                 "x": 980, 
                 "y": 350
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Kam", 
                 "name": "Kamishin"
             }, 
-            "locked": true, 
             "position": {
                 "x": 1025, 
                 "y": 275
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Sar", 
                 "name": "Sarai"
             }, 
-            "locked": true, 
             "position": {
                 "x": 1065, 
                 "y": 260
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Ada", 
                 "name": "Adalia"
             }, 
-            "locked": true, 
             "position": {
                 "x": 935, 
                 "y": 605
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Tar", 
                 "name": "Tarsus"
             }, 
-            "locked": true, 
             "position": {
                 "x": 980, 
                 "y": 605
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Cyp", 
                 "name": "Cyprus"
             }, 
-            "locked": true, 
             "position": {
                 "x": 990, 
                 "y": 660
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Ale", 
                 "name": "Aleppo"
             }, 
-            "locked": true, 
             "position": {
                 "x": 1035, 
                 "y": 620
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Lev", 
                 "name": "Levant"
             }, 
-            "locked": true, 
             "position": {
                 "x": 1040, 
                 "y": 665
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Acr", 
                 "name": "Acre"
             }, 
-            "locked": true, 
             "position": {
                 "x": 1035, 
                 "y": 715
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Jer", 
                 "name": "Jerusalem"
             }, 
-            "locked": true, 
             "position": {
                 "x": 1040, 
                 "y": 755
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Sue", 
                 "name": "Suez"
             }, 
-            "locked": true, 
             "position": {
                 "x": 1000, 
                 "y": 800
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Cai", 
                 "name": "Cairo"
             }, 
-            "locked": true, 
             "position": {
                 "x": 960, 
                 "y": 795
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Alx", 
                 "name": "Alexandria"
             }, 
-            "locked": true, 
             "position": {
                 "x": 900, 
                 "y": 790
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Lib", 
                 "name": "Libya"
             }, 
-            "locked": true, 
             "position": {
                 "x": 840, 
                 "y": 805
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Bor", 
                 "name": "Bordeaux"
             }, 
-            "locked": true, 
             "position": {
                 "x": 300, 
                 "y": 515
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Tou", 
                 "name": "Toulouse"
             }, 
-            "locked": true, 
             "position": {
                 "x": 330, 
                 "y": 560
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Lyo", 
                 "name": "Lyons"
             }, 
-            "locked": true, 
             "position": {
                 "x": 400, 
                 "y": 485
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Mon", 
                 "name": "Montpelier"
             }, 
-            "locked": true, 
             "position": {
                 "x": 380, 
                 "y": 535
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Mar", 
                 "name": "Marseilles"
             }, 
-            "locked": true, 
             "position": {
                 "x": 425, 
                 "y": 515
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Mil", 
                 "name": "Milan"
             }, 
-            "locked": true, 
             "position": {
                 "x": 460, 
                 "y": 470
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Gen", 
                 "name": "Genoa"
             }, 
-            "locked": true, 
             "position": {
                 "x": 480, 
                 "y": 515
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Ven", 
                 "name": "Venice"
             }, 
-            "locked": true, 
             "position": {
                 "x": 520, 
                 "y": 445
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Flo", 
                 "name": "Florence"
             }, 
-            "locked": true, 
             "position": {
                 "x": 535, 
                 "y": 510
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Rom", 
                 "name": "Rome"
             }, 
-            "locked": true, 
             "position": {
                 "x": 555, 
                 "y": 560
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Nap", 
                 "name": "Naples"
             }, 
-            "locked": true, 
             "position": {
                 "x": 590, 
                 "y": 575
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Cag", 
                 "name": "Cagliari"
             }, 
-            "locked": true, 
             "position": {
                 "x": 495, 
                 "y": 635
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Bri", 
                 "name": "Bari"
             }, 
-            "locked": true, 
             "position": {
                 "x": 630, 
                 "y": 595
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Sic", 
                 "name": "Sicily"
             }, 
-            "locked": true, 
             "position": {
                 "x": 585, 
                 "y": 680
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Dub", 
                 "name": "Dubrovnik"
             }, 
-            "locked": true, 
             "position": {
                 "x": 620, 
                 "y": 480
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Bel", 
                 "name": "Belgrade"
             }, 
-            "locked": true, 
             "position": {
                 "x": 675, 
                 "y": 450
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "WAf", 
                 "name": "West Africa"
             }, 
-            "locked": true, 
             "position": {
-                "x": 185, 
-                "y": 835
+                "x": 130, 
+                "y": 850
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Sev", 
                 "name": "Seville"
             }, 
-            "locked": true, 
             "position": {
                 "x": 235, 
                 "y": 770
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Gra", 
                 "name": "Granada"
             }, 
-            "locked": true, 
             "position": {
                 "x": 300, 
                 "y": 750
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Fez", 
                 "name": "Fez"
             }, 
-            "locked": true, 
             "position": {
                 "x": 310, 
                 "y": 840
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Ora", 
                 "name": "Oran"
             }, 
-            "locked": true, 
             "position": {
                 "x": 345, 
                 "y": 825
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Alg", 
                 "name": "Algiers"
             }, 
-            "locked": true, 
             "position": {
                 "x": 420, 
                 "y": 780
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Tun", 
                 "name": "Tunis"
             }, 
-            "locked": true, 
             "position": {
                 "x": 535, 
                 "y": 750
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Tri", 
                 "name": "Tripoli"
             }, 
-            "locked": true, 
             "position": {
                 "x": 575, 
                 "y": 820
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Brc", 
                 "name": "Barca"
             }, 
-            "locked": true, 
             "position": {
                 "x": 765, 
                 "y": 830
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Cre", 
                 "name": "Crete"
             }, 
-            "locked": true, 
             "position": {
                 "x": 805, 
                 "y": 660
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Smy", 
                 "name": "Smyrna"
             }, 
-            "locked": true, 
             "position": {
                 "x": 865, 
                 "y": 610
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Con", 
                 "name": "Constantinople"
             }, 
-            "locked": true, 
             "position": {
                 "x": 875, 
                 "y": 535
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Gal", 
                 "name": "Gallipoli"
             }, 
-            "locked": true, 
             "position": {
                 "x": 810, 
                 "y": 515
             }
         }, 
         {
-            "classes": "province", 
             "data": {
                 "id": "Sal", 
                 "name": "Salonika"
             }, 
-            "locked": true, 
             "position": {
                 "x": 750, 
                 "y": 550
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Ath", 
                 "name": "Athens"
             }, 
-            "locked": true, 
             "position": {
                 "x": 755, 
                 "y": 645
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Crf", 
                 "name": "Corfu"
             }, 
-            "locked": true, 
             "position": {
                 "x": 705, 
                 "y": 575
             }
         }, 
         {
-            "classes": "satellite", 
             "data": {
                 "id": "Dur", 
                 "name": "Durazzo"
             }, 
-            "locked": true, 
             "position": {
                 "x": 705, 
                 "y": 530
             }
         }, 
         {
-            "classes": "fareast", 
             "data": {
                 "id": "EIn", 
                 "name": "East Indies"
             }, 
-            "locked": true, 
             "position": {
                 "x": 1100, 
                 "y": 600
             }
         }, 
         {
-            "classes": "fareast", 
             "data": {
                 "id": "Chi", 
                 "name": "China"
             }, 
-            "locked": true, 
             "position": {
                 "x": 1100, 
                 "y": 700
             }
         }, 
         {
-            "classes": "fareast", 
             "data": {
                 "id": "Ind", 
                 "name": "India"
             }, 
-            "locked": true, 
             "position": {
                 "x": 1100, 
                 "y": 800
             }
         }, 
         {
-            "classes": "newworld", 
             "data": {
                 "id": "NAm", 
                 "name": "North America"
             }, 
-            "locked": true, 
             "position": {
-                "x": 100, 
+                "x": 50, 
                 "y": 700
             }
         }, 
         {
-            "classes": "newworld", 
             "data": {
                 "id": "SAm", 
                 "name": "South America"
             }, 
-            "locked": true, 
             "position": {
-                "x": 100, 
+                "x": 50, 
                 "y": 800
             }
-        }
-    ],
-    "edges": [
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Ham_Lub", 
-                "source": "Ham", 
-                "target": "Lub"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Ham_Cop", 
-                "source": "Ham", 
-                "target": "Cop"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Ham_Col", 
-                "source": "Ham", 
-                "target": "Col"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Ham_Ams", 
-                "source": "Ham", 
-                "target": "Ams"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Lub_Ste", 
-                "source": "Lub", 
-                "target": "Ste"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Lub_Cop", 
-                "source": "Lub", 
-                "target": "Cop"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Lub_Pra", 
-                "source": "Lub", 
-                "target": "Pra"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Lub_Nur", 
-                "source": "Lub", 
-                "target": "Nur"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Lub_Col", 
-                "source": "Lub", 
-                "target": "Col"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Ste_Dan", 
-                "source": "Ste", 
-                "target": "Dan"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Ste_Bre", 
-                "source": "Ste", 
-                "target": "Bre"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Ste_Pra", 
-                "source": "Ste", 
-                "target": "Pra"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Dan_Mit", 
-                "source": "Dan", 
-                "target": "Mit"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Dan_Bre", 
-                "source": "Dan", 
-                "target": "Bre"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Mit_Rig", 
-                "source": "Mit", 
-                "target": "Rig"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Rig_Nov", 
-                "source": "Rig", 
-                "target": "Nov"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Nov_Kie", 
-                "source": "Nov", 
-                "target": "Kie"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Mal_Sto", 
-                "source": "Mal", 
-                "target": "Sto"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Mal_Kon", 
-                "source": "Mal", 
-                "target": "Kon"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Kon_Ber", 
-                "source": "Kon", 
-                "target": "Ber"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Edi_Yor", 
-                "source": "Edi", 
-                "target": "Yor"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Edi_Che", 
-                "source": "Edi", 
-                "target": "Che"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Yor_Lon", 
-                "source": "Yor", 
-                "target": "Lon"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Yor_Che", 
-                "source": "Yor", 
-                "target": "Che"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Lon_Por", 
-                "source": "Lon", 
-                "target": "Por"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Lon_Che", 
-                "source": "Lon", 
-                "target": "Che"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Por_Cor", 
-                "source": "Por", 
-                "target": "Cor"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Por_Che", 
-                "source": "Por", 
-                "target": "Che"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Che_Wal", 
-                "source": "Che", 
-                "target": "Wal"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Arm_Wat", 
-                "source": "Arm", 
-                "target": "Wat"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bre_Pra", 
-                "source": "Bre", 
-                "target": "Pra"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bre_Slz", 
-                "source": "Bre", 
-                "target": "Slz"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bre_Vie", 
-                "source": "Bre", 
-                "target": "Vie"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Pra_Nur", 
-                "source": "Pra", 
-                "target": "Nur"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Pra_Slz", 
-                "source": "Pra", 
-                "target": "Slz"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Nur_Col", 
-                "source": "Nur", 
-                "target": "Col"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Nur_StG", 
-                "source": "Nur", 
-                "target": "StG"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Nur_Str", 
-                "source": "Nur", 
-                "target": "Str"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Nur_Slz", 
-                "source": "Nur", 
-                "target": "Slz"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Col_Ams", 
-                "source": "Col", 
-                "target": "Ams"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Col_Bru", 
-                "source": "Col", 
-                "target": "Bru"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Col_Str", 
-                "source": "Col", 
-                "target": "Str"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Ams_Bru", 
-                "source": "Ams", 
-                "target": "Bru"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bru_Par", 
-                "source": "Bru", 
-                "target": "Par"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bru_Str", 
-                "source": "Bru", 
-                "target": "Str"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Par_StM", 
-                "source": "Par", 
-                "target": "StM"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Par_Loi", 
-                "source": "Par", 
-                "target": "Loi"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Par_Dij", 
-                "source": "Par", 
-                "target": "Dij"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Par_Str", 
-                "source": "Par", 
-                "target": "Str"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Par_Bor", 
-                "source": "Par", 
-                "target": "Bor"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_StM_Loi", 
-                "source": "StM", 
-                "target": "Loi"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_StM_Bor", 
-                "source": "StM", 
-                "target": "Bor"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Loi_Bor", 
-                "source": "Loi", 
-                "target": "Bor"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Dij_Bas", 
-                "source": "Dij", 
-                "target": "Bas"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Dij_Str", 
-                "source": "Dij", 
-                "target": "Str"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Dij_Bor", 
-                "source": "Dij", 
-                "target": "Bor"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Dij_Lyo", 
-                "source": "Dij", 
-                "target": "Lyo"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bas_StG", 
-                "source": "Bas", 
-                "target": "StG"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bas_Str", 
-                "source": "Bas", 
-                "target": "Str"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bas_Lyo", 
-                "source": "Bas", 
-                "target": "Lyo"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bas_Mil", 
-                "source": "Bas", 
-                "target": "Mil"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_StG_Str", 
-                "source": "StG", 
-                "target": "Str"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_StG_Slz", 
-                "source": "StG", 
-                "target": "Slz"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_StG_Mil", 
-                "source": "StG", 
-                "target": "Mil"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_StG_Ven", 
-                "source": "StG", 
-                "target": "Ven"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Slz_Vie", 
-                "source": "Slz", 
-                "target": "Vie"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Slz_Ven", 
-                "source": "Slz", 
-                "target": "Ven"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Vie_Bud", 
-                "source": "Vie", 
-                "target": "Bud"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Vie_Ess", 
-                "source": "Vie", 
-                "target": "Ess"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Vie_Ven", 
-                "source": "Vie", 
-                "target": "Ven"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Vie_Dub", 
-                "source": "Vie", 
-                "target": "Dub"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bud_Ess", 
-                "source": "Bud", 
-                "target": "Ess"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bud_Bel", 
-                "source": "Bud", 
-                "target": "Bel"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Ess_Dub", 
-                "source": "Ess", 
-                "target": "Dub"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Ess_Bel", 
-                "source": "Ess", 
-                "target": "Bel"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bsq_Bar", 
-                "source": "Bsq", 
-                "target": "Bar"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bsq_Tol", 
-                "source": "Bsq", 
-                "target": "Tol"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bsq_Leo", 
-                "source": "Bsq", 
-                "target": "Leo"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bsq_Tou", 
-                "source": "Bsq", 
-                "target": "Tou"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bar_Val", 
-                "source": "Bar", 
-                "target": "Val"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bar_Tol", 
-                "source": "Bar", 
-                "target": "Tol"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bar_Tou", 
-                "source": "Bar", 
-                "target": "Tou"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bar_Mon", 
-                "source": "Bar", 
-                "target": "Mon"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Val_Tol", 
-                "source": "Val", 
-                "target": "Tol"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Val_Gra", 
-                "source": "Val", 
-                "target": "Gra"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Tol_Lis", 
-                "source": "Tol", 
-                "target": "Lis"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Tol_Leo", 
-                "source": "Tol", 
-                "target": "Leo"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Tol_Sev", 
-                "source": "Tol", 
-                "target": "Sev"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Tol_Gra", 
-                "source": "Tol", 
-                "target": "Gra"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Lis_Leo", 
-                "source": "Lis", 
-                "target": "Leo"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Lis_Sev", 
-                "source": "Lis", 
-                "target": "Sev"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Kie_Kaf", 
-                "source": "Kie", 
-                "target": "Kaf"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Kaf_Var", 
-                "source": "Kaf", 
-                "target": "Var"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Kaf_Tan", 
-                "source": "Kaf", 
-                "target": "Tan"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Var_Gal", 
-                "source": "Var", 
-                "target": "Gal"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Ang_Tre", 
-                "source": "Ang", 
-                "target": "Tre"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Ang_Con", 
-                "source": "Ang", 
-                "target": "Con"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Tre_Erz", 
-                "source": "Tre", 
-                "target": "Erz"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Erz_Pot", 
-                "source": "Erz", 
-                "target": "Pot"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Pot_Aba", 
-                "source": "Pot", 
-                "target": "Aba"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Aba_Tan", 
-                "source": "Aba", 
-                "target": "Tan"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Tan_Kam", 
-                "source": "Tan", 
-                "target": "Kam"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Kam_Sar", 
-                "source": "Kam", 
-                "target": "Sar"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Ada_Tar", 
-                "source": "Ada", 
-                "target": "Tar"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Ada_Smy", 
-                "source": "Ada", 
-                "target": "Smy"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Tar_Ale", 
-                "source": "Tar", 
-                "target": "Ale"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Ale_Lev", 
-                "source": "Ale", 
-                "target": "Lev"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Lev_Acr", 
-                "source": "Lev", 
-                "target": "Acr"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Acr_Jer", 
-                "source": "Acr", 
-                "target": "Jer"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Jer_Sue", 
-                "source": "Jer", 
-                "target": "Sue"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Sue_Cai", 
-                "source": "Sue", 
-                "target": "Cai"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Cai_Alx", 
-                "source": "Cai", 
-                "target": "Alx"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Alx_Lib", 
-                "source": "Alx", 
-                "target": "Lib"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Lib_Brc", 
-                "source": "Lib", 
-                "target": "Brc"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bor_Tou", 
-                "source": "Bor", 
-                "target": "Tou"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bor_Lyo", 
-                "source": "Bor", 
-                "target": "Lyo"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bor_Mon", 
-                "source": "Bor", 
-                "target": "Mon"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Tou_Mon", 
-                "source": "Tou", 
-                "target": "Mon"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Lyo_Mon", 
-                "source": "Lyo", 
-                "target": "Mon"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Lyo_Mar", 
-                "source": "Lyo", 
-                "target": "Mar"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Lyo_Mil", 
-                "source": "Lyo", 
-                "target": "Mil"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Lyo_Gen", 
-                "source": "Lyo", 
-                "target": "Gen"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Mon_Mar", 
-                "source": "Mon", 
-                "target": "Mar"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Mar_Gen", 
-                "source": "Mar", 
-                "target": "Gen"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Mil_Gen", 
-                "source": "Mil", 
-                "target": "Gen"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Mil_Ven", 
-                "source": "Mil", 
-                "target": "Ven"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Mil_Flo", 
-                "source": "Mil", 
-                "target": "Flo"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Gen_Flo", 
-                "source": "Gen", 
-                "target": "Flo"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Gen_Rom", 
-                "source": "Gen", 
-                "target": "Rom"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Ven_Flo", 
-                "source": "Ven", 
-                "target": "Flo"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Ven_Dub", 
-                "source": "Ven", 
-                "target": "Dub"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Flo_Rom", 
-                "source": "Flo", 
-                "target": "Rom"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Rom_Nap", 
-                "source": "Rom", 
-                "target": "Nap"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Nap_Bri", 
-                "source": "Nap", 
-                "target": "Bri"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Dub_Bel", 
-                "source": "Dub", 
-                "target": "Bel"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Bel_Dur", 
-                "source": "Bel", 
-                "target": "Dur"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Sev_Gra", 
-                "source": "Sev", 
-                "target": "Gra"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Fez_Ora", 
-                "source": "Fez", 
-                "target": "Ora"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Ora_Alg", 
-                "source": "Ora", 
-                "target": "Alg"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Alg_Tun", 
-                "source": "Alg", 
-                "target": "Tun"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Tun_Tri", 
-                "source": "Tun", 
-                "target": "Tri"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Tri_Brc", 
-                "source": "Tri", 
-                "target": "Brc"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Smy_Con", 
-                "source": "Smy", 
-                "target": "Con"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Gal_Sal", 
-                "source": "Gal", 
-                "target": "Sal"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Sal_Ath", 
-                "source": "Sal", 
-                "target": "Ath"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Sal_Crf", 
-                "source": "Sal", 
-                "target": "Crf"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Sal_Dur", 
-                "source": "Sal", 
-                "target": "Dur"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Ath_Crf", 
-                "source": "Ath", 
-                "target": "Crf"
-            } 
-        }, 
-        {
-            "classes": "inland", 
-            "data": {
-                "id": "L_Crf_Dur", 
-                "source": "Crf", 
-                "target": "Dur"
-            } 
+        },
+        {
+            "data": {
+                "id": "Can", 
+                "name": "Canary Basin"
+            }, 
+            "position": {
+                "x": 220, 
+                "y": 850
+            }
+        },
+        {
+            "data": {
+                "id": "Aeg", 
+                "name": "Aegea Sea"
+            }, 
+            "position": {
+                "x": 810, 
+                "y": 590
+            }
+        },
+        {
+            "data": {
+                "id": "Adr", 
+                "name": "Adriatic Sea"
+            }, 
+            "position": {
+                "x": 600, 
+                "y": 520
+            }
+        },
+        {
+            "data": {
+                "id": "WMS", 
+                "name": "W.Med.Sea"
+            }, 
+            "position": {
+                "x": 435, 
+                "y": 665
+            }
+        },
+        {
+            "data": {
+                "id": "CMS", 
+                "name": "C.Med.Sea"
+            }, 
+            "position": {
+                "x": 690, 
+                "y": 720
+            }
+        },
+        {
+            "data": {
+                "id": "EMS", 
+                "name": "E.Med.Sea"
+            }, 
+            "position": {
+                "x": 910, 
+                "y": 720
+            }
+        },
+        {
+            "data": {
+                "id": "Bla", 
+                "name": "Black Sea"
+            }, 
+            "position": {
+                "x": 935, 
+                "y": 430
+            }
+        },
+        {
+            "data": {
+                "id": "Bis", 
+                "name": "Bay of Biscay"
+            }, 
+            "position": {
+                "x": 100, 
+                "y": 530
+            }
+        },
+        {
+            "data": {
+                "id": "Now", 
+                "name": "Norwegian Sea"
+            }, 
+            "position": {
+                "x": 190, 
+                "y": 60
+            }
+        },
+        {
+            "data": {
+                "id": "Nor", 
+                "name": "North Sea"
+            }, 
+            "position": {
+                "x": 260, 
+                "y": 200
+            }
+        },
+        {
+            "data": {
+                "id": "Gre", 
+                "name": "Greenland Sea"
+            }, 
+            "position": {
+                "x": 100, 
+                "y": 150
+            }
+        },
+        {
+            "data": {
+                "id": "Bal", 
+                "name": "Baltic Sea"
+            }, 
+            "position": {
+                "x": 620, 
+                "y": 100
+            }
         }
     ]
 }
