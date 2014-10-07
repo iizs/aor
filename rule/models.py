@@ -41,6 +41,67 @@ class Commodity(models.Model):
     def __unicode__(self):
         return self.full_name
 
+class Advance(models.Model):
+    SCIENCE         = 'S'
+    RELIGION        = 'R'
+    COMMERCE        = 'C'
+    COMMUNICATION   = 'M'
+    EXPLORATION     = 'E'
+    CIVICS          = 'V'
+    CATEGORY = (
+        (SCIENCE, 'Science'),
+        (RELIGION, 'Religion'),
+        (COMMERCE, 'Commerce'),
+        (COMMUNICATION, 'Communication'),
+        (EXPLORATION, 'Exploration'),
+        (CIVICS, 'Civics'),
+    )
+    edition = models.ForeignKey('Edition')
+    short_name = models.CharField(max_length=1)
+    full_name = models.CharField(max_length=40)
+    category = models.CharField(max_length=1, choices=CATEGORY)
+    points = models.SmallIntegerField()
+    credits = models.SmallIntegerField()
+    prerequisites = models.ManyToManyField('self', symmetrical=False, null=True, blank=True)
+
+    def __unicode__(self):
+        return self.short_name + '. ' + self.full_name
+
+    # for list_display() in admin page
+    def get_all_prerequisites(self):
+        return ', '.join([c.short_name for c in self.prerequisites.all()])
+    get_all_prerequisites.short_description = 'Prerequisites'
+
+class HistoryCard(models.Model):
+    edition = models.ForeignKey('Edition')
+    full_name = models.CharField(max_length=40)
+    short_name = models.CharField(max_length=10)
+    epoch = models.SmallIntegerField()
+    recycles = models.BooleanField(default=True)
+    shuffle_later = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = (
+            ("edition", "short_name"),
+        )
+
+class EventCard(HistoryCard):
+    description = models.TextField()
+
+
+class LeaderCard(HistoryCard):
+    discount = models.SmallIntegerField()
+    advances = models.ManyToManyField('Advance')
+    event = models.ForeignKey('EventCard', null=True, blank=True)
+    discount_on_event = models.SmallIntegerField(null=True, blank=True)
+    discount_after_event = models.BooleanField(default=False)
+    discount_during_event = models.BooleanField(default=False)
+
+
+class CommodityCard(HistoryCard):
+    commodities = models.ManyToManyField('Commodity')
+
+
 class Province(models.Model):
     CAPITAL     = 'C'
     PROVINCE    = 'P'
