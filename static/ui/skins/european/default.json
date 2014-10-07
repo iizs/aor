@@ -1,0 +1,1208 @@
+{
+    "map_area": {
+        "x_max" : 1137,
+        "y_max" : 876
+    },
+    "nodes": [
+        {
+            "data": {
+                "id": "Ham", 
+                "name": "Hamburug"
+            }, 
+            "position": {
+                "x": 408, 
+                "y": 294
+            }
+        }, 
+        {
+            "data": {
+                "id": "Lub", 
+                "name": "Lubeck"
+            }, 
+            "position": {
+                "x": 453, 
+                "y": 275
+            }
+        }, 
+        {
+            "data": {
+                "id": "Ste", 
+                "name": "Stettin"
+            }, 
+            "position": {
+                "x": 506, 
+                "y": 245
+            }
+        }, 
+        {
+            "data": {
+                "id": "Dan", 
+                "name": "Danzig"
+            }, 
+            "position": {
+                "x": 600, 
+                "y": 215
+            }
+        }, 
+        {
+            "data": {
+                "id": "Mit", 
+                "name": "Mitau"
+            }, 
+            "position": {
+                "x": 639, 
+                "y": 160
+            }
+        }, 
+        {
+            "data": {
+                "id": "Rig", 
+                "name": "Riga"
+            }, 
+            "position": {
+                "x": 673, 
+                "y": 140
+            }
+        }, 
+        {
+            "data": {
+                "id": "Nov", 
+                "name": "Novgorod"
+            }, 
+            "position": {
+                "x": 720, 
+                "y": 120
+            }
+        }, 
+        {
+            "data": {
+                "id": "Cop", 
+                "name": "Copenhagen"
+            }, 
+            "position": {
+                "x": 393, 
+                "y": 187
+            }
+        }, 
+        {
+            "data": {
+                "id": "Mal", 
+                "name": "Malmo"
+            }, 
+            "position": {
+                "x": 400, 
+                "y": 85
+            }
+        }, 
+        {
+            "data": {
+                "id": "Sto", 
+                "name": "Stockholm"
+            }, 
+            "position": {
+                "x": 460, 
+                "y": 140
+            }
+        }, 
+        {
+            "data": {
+                "id": "Whi", 
+                "name": "Whisby"
+            }, 
+            "position": {
+                "x": 520, 
+                "y": 160
+            }
+        }, 
+        {
+            "data": {
+                "id": "Kon", 
+                "name": "Kongsberg"
+            }, 
+            "position": {
+                "x": 351, 
+                "y": 123
+            }
+        }, 
+        {
+            "data": {
+                "id": "Ber", 
+                "name": "Bergen"
+            }, 
+            "position": {
+                "x": 320, 
+                "y": 56
+            }
+        }, 
+        {
+            "data": {
+                "id": "She", 
+                "name": "Shetland"
+            }, 
+            "position": {
+                "x": 190, 
+                "y": 125
+            }
+        }, 
+        {
+            "data": {
+                "id": "Ice", 
+                "name": "Iceland"
+            }, 
+            "position": {
+                "x": 60, 
+                "y": 100
+            }
+        }, 
+        {
+            "data": {
+                "id": "Edi", 
+                "name": "Edinburg"
+            }, 
+            "position": {
+                "x": 145, 
+                "y": 230
+            }
+        }, 
+        {
+            "data": {
+                "id": "Yor", 
+                "name": "York"
+            }, 
+            "position": {
+                "x": 200, 
+                "y": 255
+            }
+        }, 
+        {
+            "data": {
+                "id": "Lon", 
+                "name": "London"
+            }, 
+            "position": {
+                "x": 245, 
+                "y": 325
+            }
+        }, 
+        {
+            "data": {
+                "id": "Por", 
+                "name": "Portsmouth"
+            }, 
+            "position": {
+                "x": 220, 
+                "y": 360
+            }
+        }, 
+        {
+            "data": {
+                "id": "Cor", 
+                "name": "Cornwall"
+            }, 
+            "position": {
+                "x": 170, 
+                "y": 400
+            }
+        }, 
+        {
+            "data": {
+                "id": "Che", 
+                "name": "Chester"
+            }, 
+            "position": {
+                "x": 200, 
+                "y": 320
+            }
+        }, 
+        {
+            "data": {
+                "id": "Wal", 
+                "name": "Wales"
+            }, 
+            "position": {
+                "x": 170, 
+                "y": 350
+            }
+        }, 
+        {
+            "data": {
+                "id": "Arm", 
+                "name": "Armagh"
+            }, 
+            "position": {
+                "x": 100, 
+                "y": 270
+            }
+        }, 
+        {
+            "data": {
+                "id": "Wat", 
+                "name": "Waterford"
+            }, 
+            "position": {
+                "x": 100, 
+                "y": 350
+            }
+        }, 
+        {
+            "data": {
+                "id": "Bre", 
+                "name": "Breslau"
+            }, 
+            "position": {
+                "x": 565, 
+                "y": 275
+            }
+        }, 
+        {
+            "data": {
+                "id": "Pra", 
+                "name": "Prague"
+            }, 
+            "position": {
+                "x": 490, 
+                "y": 345
+            }
+        }, 
+        {
+            "data": {
+                "id": "Nur", 
+                "name": "Nuremberg"
+            }, 
+            "position": {
+                "x": 455, 
+                "y": 380
+            }
+        }, 
+        {
+            "data": {
+                "id": "Col", 
+                "name": "Cologne"
+            }, 
+            "position": {
+                "x": 410, 
+                "y": 360
+            }
+        }, 
+        {
+            "data": {
+                "id": "Ams", 
+                "name": "Amsterdam"
+            }, 
+            "position": {
+                "x": 360, 
+                "y": 315
+            }
+        }, 
+        {
+            "data": {
+                "id": "Bru", 
+                "name": "Bruges"
+            }, 
+            "position": {
+                "x": 360, 
+                "y": 360
+            }
+        }, 
+        {
+            "data": {
+                "id": "Par", 
+                "name": "Paris"
+            }, 
+            "position": {
+                "x": 320, 
+                "y": 410
+            }
+        }, 
+        {
+            "data": {
+                "id": "StM", 
+                "name": "St.Malo"
+            }, 
+            "position": {
+                "x": 215, 
+                "y": 450
+            }
+        }, 
+        {
+            "data": {
+                "id": "Loi", 
+                "name": "Loire"
+            }, 
+            "position": {
+                "x": 260, 
+                "y": 460
+            }
+        }, 
+        {
+            "data": {
+                "id": "Dij", 
+                "name": "Dijon"
+            }, 
+            "position": {
+                "x": 355, 
+                "y": 465
+            }
+        }, 
+        {
+            "data": {
+                "id": "Bas", 
+                "name": "Basel"
+            }, 
+            "position": {
+                "x": 420, 
+                "y": 440
+            }
+        }, 
+        {
+            "data": {
+                "id": "StG", 
+                "name": "St.Gali"
+            }, 
+            "position": {
+                "x": 465, 
+                "y": 430
+            }
+        }, 
+        {
+            "data": {
+                "id": "Str", 
+                "name": "Strassburg"
+            }, 
+            "position": {
+                "x": 390, 
+                "y": 410
+            }
+        }, 
+        {
+            "data": {
+                "id": "Slz", 
+                "name": "Salzburg"
+            }, 
+            "position": {
+                "x": 515, 
+                "y": 400
+            }
+        }, 
+        {
+            "data": {
+                "id": "Vie", 
+                "name": "Vienna"
+            }, 
+            "position": {
+                "x": 580, 
+                "y": 375
+            }
+        }, 
+        {
+            "data": {
+                "id": "Bud", 
+                "name": "Budapest"
+            }, 
+            "position": {
+                "x": 620, 
+                "y": 380
+            }
+        }, 
+        {
+            "data": {
+                "id": "Ess", 
+                "name": "Esseg"
+            }, 
+            "position": {
+                "x": 600, 
+                "y": 425
+            }
+        }, 
+        {
+            "data": {
+                "id": "Bsq", 
+                "name": "Basque"
+            }, 
+            "position": {
+                "x": 250, 
+                "y": 605
+            }
+        }, 
+        {
+            "data": {
+                "id": "Bar", 
+                "name": "Barcelona"
+            }, 
+            "position": {
+                "x": 355, 
+                "y": 610
+            }
+        }, 
+        {
+            "data": {
+                "id": "Val", 
+                "name": "Valencia"
+            }, 
+            "position": {
+                "x": 315, 
+                "y": 685
+            }
+        }, 
+        {
+            "data": {
+                "id": "Tol", 
+                "name": "Toledo"
+            }, 
+            "position": {
+                "x": 255, 
+                "y": 660
+            }
+        }, 
+        {
+            "data": {
+                "id": "Lis", 
+                "name": "Lisbon"
+            }, 
+            "position": {
+                "x": 190, 
+                "y": 720
+            }
+        }, 
+        {
+            "data": {
+                "id": "Leo", 
+                "name": "Leon"
+            }, 
+            "position": {
+                "x": 190, 
+                "y": 640
+            }
+        }, 
+        {
+            "data": {
+                "id": "Pal", 
+                "name": "Palma"
+            }, 
+            "position": {
+                "x": 365, 
+                "y": 650
+            }
+        }, 
+        {
+            "data": {
+                "id": "Kie", 
+                "name": "Kiev"
+            }, 
+            "position": {
+                "x": 835, 
+                "y": 250
+            }
+        }, 
+        {
+            "data": {
+                "id": "Kaf", 
+                "name": "Kaffa"
+            }, 
+            "position": {
+                "x": 910, 
+                "y": 330
+            }
+        }, 
+        {
+            "data": {
+                "id": "Var", 
+                "name": "Varna"
+            }, 
+            "position": {
+                "x": 820, 
+                "y": 425
+            }
+        }, 
+        {
+            "data": {
+                "id": "Ang", 
+                "name": "Angora"
+            }, 
+            "position": {
+                "x": 950, 
+                "y": 490
+            }
+        }, 
+        {
+            "data": {
+                "id": "Tre", 
+                "name": "Trebizond"
+            }, 
+            "position": {
+                "x": 1020, 
+                "y": 480
+            }
+        }, 
+        {
+            "data": {
+                "id": "Erz", 
+                "name": "Erzerum"
+            }, 
+            "position": {
+                "x": 1085, 
+                "y": 475
+            }
+        }, 
+        {
+            "data": {
+                "id": "Pot", 
+                "name": "Poti"
+            }, 
+            "position": {
+                "x": 1085, 
+                "y": 405
+            }
+        }, 
+        {
+            "data": {
+                "id": "Aba", 
+                "name": "Abasigia"
+            }, 
+            "position": {
+                "x": 1035, 
+                "y": 375
+            }
+        }, 
+        {
+            "data": {
+                "id": "Tan", 
+                "name": "Tana"
+            }, 
+            "position": {
+                "x": 980, 
+                "y": 350
+            }
+        }, 
+        {
+            "data": {
+                "id": "Kam", 
+                "name": "Kamishin"
+            }, 
+            "position": {
+                "x": 1025, 
+                "y": 275
+            }
+        }, 
+        {
+            "data": {
+                "id": "Sar", 
+                "name": "Sarai"
+            }, 
+            "position": {
+                "x": 1085, 
+                "y": 260
+            }
+        }, 
+        {
+            "data": {
+                "id": "Ada", 
+                "name": "Adalia"
+            }, 
+            "position": {
+                "x": 935, 
+                "y": 605
+            }
+        }, 
+        {
+            "data": {
+                "id": "Tar", 
+                "name": "Tarsus"
+            }, 
+            "position": {
+                "x": 980, 
+                "y": 605
+            }
+        }, 
+        {
+            "data": {
+                "id": "Cyp", 
+                "name": "Cyprus"
+            }, 
+            "position": {
+                "x": 990, 
+                "y": 660
+            }
+        }, 
+        {
+            "data": {
+                "id": "Ale", 
+                "name": "Aleppo"
+            }, 
+            "position": {
+                "x": 1035, 
+                "y": 620
+            }
+        }, 
+        {
+            "data": {
+                "id": "Lev", 
+                "name": "Levant"
+            }, 
+            "position": {
+                "x": 1040, 
+                "y": 665
+            }
+        }, 
+        {
+            "data": {
+                "id": "Acr", 
+                "name": "Acre"
+            }, 
+            "position": {
+                "x": 1035, 
+                "y": 715
+            }
+        }, 
+        {
+            "data": {
+                "id": "Jer", 
+                "name": "Jerusalem"
+            }, 
+            "position": {
+                "x": 1040, 
+                "y": 770
+            }
+        }, 
+        {
+            "data": {
+                "id": "Sue", 
+                "name": "Suez"
+            }, 
+            "position": {
+                "x": 1000, 
+                "y": 800
+            }
+        }, 
+        {
+            "data": {
+                "id": "Cai", 
+                "name": "Cairo"
+            }, 
+            "position": {
+                "x": 960, 
+                "y": 795
+            }
+        }, 
+        {
+            "data": {
+                "id": "Alx", 
+                "name": "Alexandria"
+            }, 
+            "position": {
+                "x": 900, 
+                "y": 790
+            }
+        }, 
+        {
+            "data": {
+                "id": "Lib", 
+                "name": "Libya"
+            }, 
+            "position": {
+                "x": 840, 
+                "y": 805
+            }
+        }, 
+        {
+            "data": {
+                "id": "Bor", 
+                "name": "Bordeaux"
+            }, 
+            "position": {
+                "x": 250, 
+                "y": 515
+            }
+        }, 
+        {
+            "data": {
+                "id": "Tou", 
+                "name": "Toulouse"
+            }, 
+            "position": {
+                "x": 280, 
+                "y": 560
+            }
+        }, 
+        {
+            "data": {
+                "id": "Lyo", 
+                "name": "Lyons"
+            }, 
+            "position": {
+                "x": 400, 
+                "y": 485
+            }
+        }, 
+        {
+            "data": {
+                "id": "Mon", 
+                "name": "Montpelier"
+            }, 
+            "position": {
+                "x": 350, 
+                "y": 535
+            }
+        }, 
+        {
+            "data": {
+                "id": "Mar", 
+                "name": "Marseilles"
+            }, 
+            "position": {
+                "x": 425, 
+                "y": 535
+            }
+        }, 
+        {
+            "data": {
+                "id": "Mil", 
+                "name": "Milan"
+            }, 
+            "position": {
+                "x": 460, 
+                "y": 470
+            }
+        }, 
+        {
+            "data": {
+                "id": "Gen", 
+                "name": "Genoa"
+            }, 
+            "position": {
+                "x": 480, 
+                "y": 515
+            }
+        }, 
+        {
+            "data": {
+                "id": "Ven", 
+                "name": "Venice"
+            }, 
+            "position": {
+                "x": 520, 
+                "y": 445
+            }
+        }, 
+        {
+            "data": {
+                "id": "Flo", 
+                "name": "Florence"
+            }, 
+            "position": {
+                "x": 535, 
+                "y": 510
+            }
+        }, 
+        {
+            "data": {
+                "id": "Rom", 
+                "name": "Rome"
+            }, 
+            "position": {
+                "x": 555, 
+                "y": 560
+            }
+        }, 
+        {
+            "data": {
+                "id": "Nap", 
+                "name": "Naples"
+            }, 
+            "position": {
+                "x": 590, 
+                "y": 575
+            }
+        }, 
+        {
+            "data": {
+                "id": "Cag", 
+                "name": "Cagliari"
+            }, 
+            "position": {
+                "x": 440, 
+                "y": 580
+            }
+        }, 
+        {
+            "data": {
+                "id": "Bri", 
+                "name": "Bari"
+            }, 
+            "position": {
+                "x": 630, 
+                "y": 595
+            }
+        }, 
+        {
+            "data": {
+                "id": "Sic", 
+                "name": "Sicily"
+            }, 
+            "position": {
+                "x": 585, 
+                "y": 680
+            }
+        }, 
+        {
+            "data": {
+                "id": "Dub", 
+                "name": "Dubrovnik"
+            }, 
+            "position": {
+                "x": 620, 
+                "y": 480
+            }
+        }, 
+        {
+            "data": {
+                "id": "Bel", 
+                "name": "Belgrade"
+            }, 
+            "position": {
+                "x": 675, 
+                "y": 450
+            }
+        }, 
+        {
+            "data": {
+                "id": "WAf", 
+                "name": "West Africa"
+            }, 
+            "position": {
+                "x": 130, 
+                "y": 850
+            }
+        }, 
+        {
+            "data": {
+                "id": "Sev", 
+                "name": "Seville"
+            }, 
+            "position": {
+                "x": 235, 
+                "y": 770
+            }
+        }, 
+        {
+            "data": {
+                "id": "Gra", 
+                "name": "Granada"
+            }, 
+            "position": {
+                "x": 300, 
+                "y": 750
+            }
+        }, 
+        {
+            "data": {
+                "id": "Fez", 
+                "name": "Fez"
+            }, 
+            "position": {
+                "x": 310, 
+                "y": 840
+            }
+        }, 
+        {
+            "data": {
+                "id": "Ora", 
+                "name": "Oran"
+            }, 
+            "position": {
+                "x": 345, 
+                "y": 825
+            }
+        }, 
+        {
+            "data": {
+                "id": "Alg", 
+                "name": "Algiers"
+            }, 
+            "position": {
+                "x": 420, 
+                "y": 780
+            }
+        }, 
+        {
+            "data": {
+                "id": "Tun", 
+                "name": "Tunis"
+            }, 
+            "position": {
+                "x": 535, 
+                "y": 750
+            }
+        }, 
+        {
+            "data": {
+                "id": "Tri", 
+                "name": "Tripoli"
+            }, 
+            "position": {
+                "x": 575, 
+                "y": 820
+            }
+        }, 
+        {
+            "data": {
+                "id": "Brc", 
+                "name": "Barca"
+            }, 
+            "position": {
+                "x": 765, 
+                "y": 830
+            }
+        }, 
+        {
+            "data": {
+                "id": "Cre", 
+                "name": "Crete"
+            }, 
+            "position": {
+                "x": 805, 
+                "y": 660
+            }
+        }, 
+        {
+            "data": {
+                "id": "Smy", 
+                "name": "Smyrna"
+            }, 
+            "position": {
+                "x": 865, 
+                "y": 610
+            }
+        }, 
+        {
+            "data": {
+                "id": "Con", 
+                "name": "Constantinople"
+            }, 
+            "position": {
+                "x": 875, 
+                "y": 535
+            }
+        }, 
+        {
+            "data": {
+                "id": "Gal", 
+                "name": "Gallipoli"
+            }, 
+            "position": {
+                "x": 810, 
+                "y": 515
+            }
+        }, 
+        {
+            "data": {
+                "id": "Sal", 
+                "name": "Salonika"
+            }, 
+            "position": {
+                "x": 750, 
+                "y": 550
+            }
+        }, 
+        {
+            "data": {
+                "id": "Ath", 
+                "name": "Athens"
+            }, 
+            "position": {
+                "x": 755, 
+                "y": 645
+            }
+        }, 
+        {
+            "data": {
+                "id": "Crf", 
+                "name": "Corfu"
+            }, 
+            "position": {
+                "x": 705, 
+                "y": 575
+            }
+        }, 
+        {
+            "data": {
+                "id": "Dur", 
+                "name": "Durazzo"
+            }, 
+            "position": {
+                "x": 705, 
+                "y": 530
+            }
+        }, 
+        {
+            "data": {
+                "id": "EIn", 
+                "name": "East Indies"
+            }, 
+            "position": {
+                "x": 1100, 
+                "y": 600
+            }
+        }, 
+        {
+            "data": {
+                "id": "Chi", 
+                "name": "China"
+            }, 
+            "position": {
+                "x": 1100, 
+                "y": 700
+            }
+        }, 
+        {
+            "data": {
+                "id": "Ind", 
+                "name": "India"
+            }, 
+            "position": {
+                "x": 1100, 
+                "y": 800
+            }
+        }, 
+        {
+            "data": {
+                "id": "NAm", 
+                "name": "North America"
+            }, 
+            "position": {
+                "x": 50, 
+                "y": 700
+            }
+        }, 
+        {
+            "data": {
+                "id": "SAm", 
+                "name": "South America"
+            }, 
+            "position": {
+                "x": 50, 
+                "y": 800
+            }
+        },
+        {
+            "data": {
+                "id": "Can", 
+                "name": "Canary Basin"
+            }, 
+            "position": {
+                "x": 220, 
+                "y": 850
+            }
+        },
+        {
+            "data": {
+                "id": "Aeg", 
+                "name": "Aegea Sea"
+            }, 
+            "position": {
+                "x": 810, 
+                "y": 590
+            }
+        },
+        {
+            "data": {
+                "id": "Adr", 
+                "name": "Adriatic Sea"
+            }, 
+            "position": {
+                "x": 600, 
+                "y": 520
+            }
+        },
+        {
+            "data": {
+                "id": "WMS", 
+                "name": "W.Med.Sea"
+            }, 
+            "position": {
+                "x": 435, 
+                "y": 665
+            }
+        },
+        {
+            "data": {
+                "id": "CMS", 
+                "name": "C.Med.Sea"
+            }, 
+            "position": {
+                "x": 690, 
+                "y": 720
+            }
+        },
+        {
+            "data": {
+                "id": "EMS", 
+                "name": "E.Med.Sea"
+            }, 
+            "position": {
+                "x": 910, 
+                "y": 720
+            }
+        },
+        {
+            "data": {
+                "id": "Bla", 
+                "name": "Black Sea"
+            }, 
+            "position": {
+                "x": 935, 
+                "y": 430
+            }
+        },
+        {
+            "data": {
+                "id": "Bis", 
+                "name": "Bay of Biscay"
+            }, 
+            "position": {
+                "x": 100, 
+                "y": 530
+            }
+        },
+        {
+            "data": {
+                "id": "Now", 
+                "name": "Norwegian Sea"
+            }, 
+            "position": {
+                "x": 190, 
+                "y": 60
+            }
+        },
+        {
+            "data": {
+                "id": "Nor", 
+                "name": "North Sea"
+            }, 
+            "position": {
+                "x": 260, 
+                "y": 200
+            }
+        },
+        {
+            "data": {
+                "id": "Gre", 
+                "name": "Greenland Sea"
+            }, 
+            "position": {
+                "x": 100, 
+                "y": 150
+            }
+        },
+        {
+            "data": {
+                "id": "Bal", 
+                "name": "Baltic Sea"
+            }, 
+            "position": {
+                "x": 620, 
+                "y": 100
+            }
+        }
+    ]
+}
