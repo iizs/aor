@@ -49,6 +49,12 @@ $('#cy').cytoscape({
           'width': 10,
           'height': 10,
       })
+    .selector('node.coast')
+      .css({
+          'shape': 'ellipse',
+          'width': 1,
+          'height': 1,
+      })
     .selector(':selected')
       .css({
         'border-width': 3,
@@ -73,7 +79,7 @@ $('#cy').cytoscape({
       .css({
         'line-style': 'dotted',
         'line-color': '#0099ff',
-        'width': 30,
+        'width': 8,
       })
     .selector('edge.support')
       .css({
@@ -164,12 +170,48 @@ $(document).ready(function(){
                     locked: true,
                     classes: 'sea'
                 });
+            } else {
+                // coast 
+                if ( w.short_name != province_map[w.coast_of] ) {
+                    seas.push({
+                        data: { 
+                            id: w.short_name, 
+                            name: "",
+                            x_ratio: skin_node_map[province_map[w.coast_of]].position.x / x_max,
+                            y_ratio: skin_node_map[province_map[w.coast_of]].position.y / y_max,
+                        },
+                        position: { 
+                            x: skin_node_map[province_map[w.coast_of]].position.x / x_max * cy.width(), 
+                            y: skin_node_map[province_map[w.coast_of]].position.y / y_max * cy.height() 
+                        },
+                        locked: true,
+                        classes: 'coast'
+                    });
+                }
             }
         }
         cy.add( {nodes:seas} );
 
         // add sea edge
-        //var sea_edge = []
+        var sea_edge = [];
+        for (var i in map_data.waters) {
+            var w = map_data.waters[i].fields;
+            var w_pk = map_data.waters[i].pk;
+
+            for (var j in w.connected ) {
+                if ( w.connected[j] > p_pk && w.connected[j] in water_map ) {
+                    sea_edge.push({
+                        data: { 
+                            id: 'S_' + w.short_name + '_' + water_map[w.connected[j]], 
+                            source: w.short_name, 
+                            target: water_map[w.connected[j]] 
+                        },
+                        classes: 'sea',
+                    });
+                }
+            }
+        }
+        cy.add( {edges:sea_edge} );
 
         // add inland edge
         var inland_edge = []
