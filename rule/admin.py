@@ -112,6 +112,33 @@ class LeaderCardAdmin(admin.ModelAdmin):
         models.ManyToManyField: {'widget': SelectMultiple(attrs={'size':'10'}) },
     }
 
+class CommodityCardAdmin(admin.ModelAdmin):
+    fieldsets = [
+        ('None',    {'fields': [
+                        'edition', 
+                        'short_name', 
+                        'full_name', 
+                        'epoch', 
+                        'recycles', 
+                        'shuffle_later', 
+                        'commodities'
+                    ]}
+        ),
+    ]
+    list_display = (
+        'full_name', 
+        'short_name', 
+        'epoch', 
+        'get_all_commodities',
+        'shuffle_later', 
+        'recycles', 
+        'edition', 
+    )
+    formfield_overrides = {
+        models.ManyToManyField: {'widget': SelectMultiple(attrs={'size':'10'}) },
+    }
+
+
 admin.site.register(Edition)
 admin.site.register(Commodity, CommodityAdmin)
 admin.site.register(Province, ProvinceAdmin)
@@ -119,5 +146,5 @@ admin.site.register(Water, WaterAdmin)
 #admin.site.register(HistoryCard)
 admin.site.register(EventCard, EventCardAdmin)
 admin.site.register(LeaderCard, LeaderCardAdmin)
-admin.site.register(CommodityCard)
+admin.site.register(CommodityCard, CommodityCardAdmin)
 admin.site.register(Advance, AdvanceAdmin)

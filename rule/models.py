@@ -91,7 +91,6 @@ class HistoryCard(models.Model):
 class EventCard(HistoryCard):
     description = models.TextField()
 
-
 class LeaderCard(HistoryCard):
     discount = models.SmallIntegerField()
     advances = models.ManyToManyField('Advance')
@@ -108,6 +107,11 @@ class LeaderCard(HistoryCard):
 
 class CommodityCard(HistoryCard):
     commodities = models.ManyToManyField('Commodity')
+
+    # for list_display() in admin page
+    def get_all_commodities(self):
+        return ', '.join([c.full_name for c in self.commodities.all()])
+    get_all_commodities.short_description = 'Commodities'
 
 
 class Province(models.Model):
