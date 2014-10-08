@@ -38,6 +38,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'rule',
     'ui',
+    'player',
 )
 
 MIDDLEWARE_CLASSES = (
