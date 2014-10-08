@@ -85,6 +85,9 @@ class HistoryCard(models.Model):
             ("edition", "short_name"),
         )
 
+    def __unicode__(self):
+        return self.full_name
+
 class EventCard(HistoryCard):
     description = models.TextField()
 
@@ -96,6 +99,11 @@ class LeaderCard(HistoryCard):
     discount_on_event = models.SmallIntegerField(null=True, blank=True)
     discount_after_event = models.BooleanField(default=False)
     discount_during_event = models.BooleanField(default=False)
+
+    # for list_display() in admin page
+    def get_all_advances(self):
+        return ', '.join([c.short_name for c in self.advances.all()])
+    get_all_advances.short_description = 'Advances'
 
 
 class CommodityCard(HistoryCard):
