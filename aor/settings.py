@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     'rule',
     'ui',
     'player',
+    'game',
 )
 
 MIDDLEWARE_CLASSES = (
