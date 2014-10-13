@@ -27,3 +27,16 @@ def create(request):
         response_data['errmsg'] = e.args
 
     return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
+
+def get(request):
+    response_data = {}
+    try:
+        p = Player.objects.get(user_id=request.GET['user_id'])
+        response_data['success'] = True
+        response_data['user_id'] = p.user_id
+        response_data['name'] = p.name
+        response_data['email'] = p.email
+    except Player.DoesNotExist:
+        response_data['success'] = False
+        response_data['errmsg'] = 'Player not found: ' + request.GET['user_id']
+    return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
