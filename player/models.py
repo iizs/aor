@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 class Player(models.Model):
     IIZS_NET    = 'i'
@@ -37,4 +38,15 @@ class AccessToken(models.Model):
     def __unicode__(self):
         return self.token
 
+    class Invalid(Exception):
+        def __init__(self, value):
+            self.value = value
+        def __unicode__(self):
+            return repr(self.value)
+
+    class Expired(Exception):
+        def __init__(self, value):
+            self.value = value
+        def __unicode__(self):
+            return repr(self.value)
 

@@ -10,7 +10,6 @@ import json
 import requests
 
 from player.models import Player, AccessToken
-from player.exceptions import InvalidAccessToken
 from player.decorators import requires_access_token
 
 # this can raise IntegrityError
@@ -28,7 +27,7 @@ def _get_token_info(token, auth_provider=Player.IIZS_NET):
     r = requests.get("https://iizs.net/auth/tokeninfo", params=payloads, verify=False)
     # TODO add validity check
     if r.status_code != 200:
-        raise InvalidAccessToken( 'AccessToken, "' + token + '" not found from iizs.net')
+        raise AccessToken.Invalid( 'AccessToken, \'' + token + '\' not found from iizs.net')
     return r.json()
 
 @csrf_exempt
@@ -91,7 +90,7 @@ def registerToken(request):
 
         response_data['success'] = True
 
-    except InvalidAccessToken as e:
+    except AccessToken.Invalid as e:
         response_data['success'] = False
         response_data['errmsg'] = e.value
     except Player.DoesNotExist:
