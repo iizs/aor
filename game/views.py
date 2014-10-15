@@ -3,7 +3,9 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
+from django.db.models import Q
 from django.utils.datastructures import MultiValueDictKeyError
+from django.core import serializers
 
 import random
 import string
@@ -34,6 +36,16 @@ def create(request):
         response_data['game_id'] = g.hashkey
     except (MultiValueDictKeyError, IntegrityError) as e:
         response_data['success'] = False
-        response_data['errmsg'] = e.args
+        response_data['errmsg'] = e.message
 
     return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
+
+def list_games(request):
+    response_data = {}
+    games = Game.objects.all().filter(
+        Q(status__exact=Game.WAITING) | Q(status__exact=Game.IN_PROGRESS))
+    response_data['games'] = json.loads(serializers.serialize('json', games))
+    response_data['success'] = True
+    return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
+
+
