@@ -9,5 +9,6 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/v1/rule/', include('rule.urls', namespace="rule")),
     url(r'^api/v1/player/', include('player.urls', namespace="player")),
+    url(r'^api/v1/game/', include('game.urls', namespace="game")),
     url(r'^ui/', include('ui.urls', namespace="ui")),
 )
