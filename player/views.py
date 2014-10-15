@@ -50,7 +50,11 @@ def create(request):
 
     return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
 
-@requires_access_token
+def _get_user_id(request):
+    return request.GET['user_id']
+
+#@requires_access_token(func_get_user_id=_get_user_id)
+@requires_access_token()
 def get(request):
     try:
         response_data = {}
@@ -58,8 +62,8 @@ def get(request):
         p = Player.objects.get(user_id=request.GET['user_id'])
         response_data['success'] = True
         response_data['user_id'] = p.user_id
-        response_data['name'] = p.name
-        response_data['email'] = p.email
+        response_data['nickname'] = p.name
+        #response_data['email'] = p.email
     except Player.DoesNotExist:
         response_data['success'] = False
         response_data['errmsg'] = 'Player not found: ' + request.GET['user_id']
