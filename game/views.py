@@ -40,7 +40,7 @@ def create(request):
 
     return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
 
-def list_games(request):
+def list(request):
     response_data = {}
     games = Game.objects.all().filter(
         Q(status__exact=Game.WAITING) | Q(status__exact=Game.IN_PROGRESS))
