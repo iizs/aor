@@ -39,14 +39,14 @@ class AccessToken(models.Model):
         return self.token
 
     class Invalid(Exception):
-        def __init__(self, value):
-            self.value = value
+        def __init__(self, message):
+            self.message = message
         def __unicode__(self):
-            return repr(self.value)
+            return repr(self.message)
 
     class Expired(Exception):
-        def __init__(self, value):
-            self.value = value
+        def __init__(self, message):
+            self.message = message
         def __unicode__(self):
-            return repr(self.value)
+            return repr(self.message)
 

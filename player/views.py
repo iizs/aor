@@ -46,7 +46,7 @@ def create(request):
     except IntegrityError as e:
         response_data['success'] = False
         # TODO DB 오류 메시지가 그대로 노출되므로 좋지 않다. 수정 필요
-        response_data['errmsg'] = e.args
+        response_data['errmsg'] = e.message
 
     return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
 
@@ -64,9 +64,9 @@ def get(request):
         response_data['user_id'] = p.user_id
         response_data['nickname'] = p.name
         #response_data['email'] = p.email
-    except Player.DoesNotExist:
+    except Player.DoesNotExist as e:
         response_data['success'] = False
-        response_data['errmsg'] = 'Player not found: ' + request.GET['user_id']
+        response_data['errmsg'] = e.message
     return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
 
 def registerToken(request):
@@ -94,11 +94,8 @@ def registerToken(request):
 
         response_data['success'] = True
 
-    except AccessToken.Invalid as e:
+    except (AccessToken.Invalid, Player.DoesNotExist) as e:
         response_data['success'] = False
-        response_data['errmsg'] = e.value
-    except Player.DoesNotExist:
-        response_data['success'] = False
-        response_data['errmsg'] = 'Player not found: ' + request.GET['user_id']
+        response_data['errmsg'] = e.message 
 
     return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
