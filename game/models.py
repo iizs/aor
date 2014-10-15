@@ -24,7 +24,7 @@ class Game(models.Model):
 
     id = models.AutoField(primary_key=True)
     hashkey = models.CharField(max_length=255, unique=True, db_index=True)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, null=True, blank=True)
     date_created = models.DateTimeField('datetime created', auto_now_add=True)
     date_started = models.DateTimeField('datetime started', null=True, blank=True)
     date_ended = models.DateTimeField('datetime ended', null=True, blank=True)
@@ -40,6 +40,12 @@ class Game(models.Model):
 
     def __unicode__(self):
         return self.hashkey
+
+    class UnableToDelete(Exception):
+        def __init__(self, message):
+            self.message = message
+        def __unicode__(self):
+            return repr(self.message)
 
 class GameLog(models.Model):
     game = models.ForeignKey('Game')

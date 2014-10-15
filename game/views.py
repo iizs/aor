@@ -49,3 +49,21 @@ def list(request):
     return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
 
 
+@csrf_exempt
+def delete(request):
+    response_data = {}
+
+    try:
+        g = Game.objects.get(hashkey=request.POST['game_id'])
+
+        if ( g.status == Game.WAITING and g.players.count() == 0 ) :
+            g.delete()
+            response_data['success'] = True
+        else :
+            raise Game.UnableToDelete('unable to delete game')
+
+    except (MultiValueDictKeyError, Game.DoesNotExist, Game.UnableToDelete) as e:
+        response_data['success'] = False
+        response_data['errmsg'] = e.message
+
+    return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
