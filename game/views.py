@@ -13,12 +13,15 @@ import json
 
 from game.models import Game, GameLog
 from rule.models import Edition
+from player.models import Player
+from player.decorators import requires_access_token
 
 def _generate_hashkey(size=15):
     c = string.letters + string.digits
     return ''.join(random.sample(c, size))
 
 @csrf_exempt
+@requires_access_token()
 def create(request):
     response_data = {}
 
@@ -40,6 +43,7 @@ def create(request):
 
     return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
 
+@requires_access_token()
 def list(request):
     response_data = {}
     games = Game.objects.all().filter(
@@ -50,6 +54,7 @@ def list(request):
 
 
 @csrf_exempt
+@requires_access_token()
 def delete(request):
     response_data = {}
 
@@ -63,6 +68,51 @@ def delete(request):
             raise Game.UnableToDelete('unable to delete game')
 
     except (MultiValueDictKeyError, Game.DoesNotExist, Game.UnableToDelete) as e:
+        response_data['success'] = False
+        response_data['errmsg'] = e.message
+
+    return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
+
+def _get_user_id_from_post(request):
+    return request.POST['user_id']
+
+@csrf_exempt
+@requires_access_token(func_get_user_id=_get_user_id_from_post)
+def join(request):
+    response_data = {}
+
+    try:
+        g = Game.objects.get(hashkey=request.POST['game_id'])
+        p = Player.objects.get(user_id=request.POST['user_id'])
+
+        if ( g.status == Game.WAITING and g.players.count() < g.num_players ) :
+            g.players.add(p)
+            response_data['success'] = True
+        else :
+            raise Game.UnableToJoin('unable to join game')
+
+    except (MultiValueDictKeyError, Game.DoesNotExist, Game.UnableToJoin, Player.DoesNotExist) as e:
+        response_data['success'] = False
+        response_data['errmsg'] = e.message
+
+    return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
+
+@csrf_exempt
+@requires_access_token(func_get_user_id=_get_user_id_from_post)
+def quit(request):
+    response_data = {}
+
+    try:
+        g = Game.objects.get(hashkey=request.POST['game_id'])
+        p = Player.objects.get(user_id=request.POST['user_id'])
+
+        if ( g.status == Game.WAITING  ) :
+            g.players.remove(p)
+            response_data['success'] = True
+        else :
+            raise Game.UnableToQuit('unable to quit game')
+
+    except (MultiValueDictKeyError, Game.DoesNotExist, Game.UnableToQuit, Player.DoesNotExist) as e:
         response_data['success'] = False
         response_data['errmsg'] = e.message
 

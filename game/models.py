@@ -46,6 +46,18 @@ class Game(models.Model):
             self.message = message
         def __unicode__(self):
             return repr(self.message)
+            
+    class UnableToJoin(Exception):
+        def __init__(self, message):
+            self.message = message
+        def __unicode__(self):
+            return repr(self.message)
+            
+    class UnableToQuit(Exception):
+        def __init__(self, message):
+            self.message = message
+        def __unicode__(self):
+            return repr(self.message)
 
 class GameLog(models.Model):
     game = models.ForeignKey('Game')
