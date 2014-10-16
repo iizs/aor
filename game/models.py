@@ -75,9 +75,18 @@ class Game(models.Model):
             return repr(self.message)
 
 class GameLog(models.Model):
+    ACCEPTED = 'A'
+    CONFIRMED = 'C'
+    FAILED = 'F'
+    STATUS = (
+        (ACCEPTED, 'Accepted'),
+        (CONFIRMED, 'Confirmed'),
+        (FAILED, 'Failed'),
+    )
     game = models.ForeignKey('Game')
     lsn = models.SmallIntegerField('log sequence number')
     timestamp = models.DateTimeField('timestamp', auto_now_add=True)
+    status = models.CharField(max_length=1, choices=STATUS, default=ACCEPTED)
     log = models.TextField()
 
     class Meta:
