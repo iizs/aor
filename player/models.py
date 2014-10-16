@@ -50,3 +50,9 @@ class AccessToken(models.Model):
         def __unicode__(self):
             return repr(self.message)
 
+    class NotFound(Exception):
+        def __init__(self, message):
+            self.message = message
+        def __unicode__(self):
+            return repr(self.message)
+
