@@ -48,7 +48,9 @@ def list(request):
     response_data = {}
     games = Game.objects.all().filter(
         Q(status__exact=Game.WAITING) | Q(status__exact=Game.IN_PROGRESS))
-    response_data['games'] = json.loads(serializers.serialize('json', games))
+    response_data['games'] = []
+    for g in games:
+        response_data['games'].append(g.to_dict())
     response_data['success'] = True
     return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
 

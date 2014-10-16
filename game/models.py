@@ -41,6 +41,21 @@ class Game(models.Model):
     def __unicode__(self):
         return self.hashkey
 
+    def to_dict(self):
+        d = {}
+        d['game_id'] = self.hashkey
+        d['name'] = self.name
+        d['date_created'] = str(self.date_created) if self.date_created != None else None 
+        d['date_started'] = str(self.date_started) if self.date_started != None else None
+        d['date_ended'] = str(self.date_ended) if self.date_ended != None else None
+        d['status'] = self.status
+        d['edition'] = str(self.edition)
+        d['num_players'] = self.num_players
+        d['players'] = []
+        for p in self.players.all():
+            d['players'].append(str(p))
+        return d
+
     class UnableToDelete(Exception):
         def __init__(self, message):
             self.message = message
