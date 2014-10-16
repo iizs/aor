@@ -74,6 +74,12 @@ class Game(models.Model):
         def __unicode__(self):
             return repr(self.message)
 
+    class UnableToStart(Exception):
+        def __init__(self, message):
+            self.message = message
+        def __unicode__(self):
+            return repr(self.message)
+
 class GameLog(models.Model):
     ACCEPTED = 'A'
     CONFIRMED = 'C'

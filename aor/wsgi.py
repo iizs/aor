@@ -12,3 +12,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "aor.settings")
 
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
+
+# to use celery
+import djcelery
+djcelery.setup_loader()

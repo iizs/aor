@@ -123,3 +123,29 @@ def quit(request):
         response_data['errmsg'] = e.message
 
     return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
+
+@csrf_exempt
+@requires_access_token(func_get_user_id=_get_user_id_from_post)
+def start(request):
+    response_data = {}
+
+    try:
+        with transaction.atomic():
+            g = Game.objects.get(hashkey=request.POST['game_id'])
+            p = Player.objects.get(user_id=request.POST['user_id'])
+
+            if ( ( g.status == Game.WAITING ) 
+                and g.players.filter(user_id=request.POST['user_id']).exists() 
+                and len(g.players.all()) == g.num_players ):
+                g.status = Game.IN_PROGRESS
+                g.save()
+                # TODO queue initial action
+                response_data['success'] = True
+            else :
+                raise Game.UnableToStart('unable to start game')
+
+    except (MultiValueDictKeyError, Game.DoesNotExist, Player.DoesNotExist, Game.UnableToStart) as e:
+        response_data['success'] = False
+        response_data['errmsg'] = e.message
+
+    return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")

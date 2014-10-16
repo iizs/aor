@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+# to use celery
+import djcelery
+djcelery.setup_loader()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
@@ -36,6 +39,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'djcelery',
     'rule',
     'ui',
     'player',
@@ -55,6 +59,9 @@ MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = 'aor.urls'
 
 WSGI_APPLICATION = 'aor.wsgi.application'
+
+# Celery
+CELERY_ACCEPT_CONTENT = ['json']
 
 
 # Database
