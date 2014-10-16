@@ -9,5 +9,6 @@ urlpatterns = patterns('',
     url(r'^join/$', views.join),
     url(r'^quit/$', views.quit),
     url(r'^start/$', views.start),
+    url(r'^action/$', views.action),
     #url(r'^registerToken/$', views.registerToken),
 )

@@ -100,3 +100,9 @@ class GameLog(models.Model):
         unique_together = (
             ("game", "lsn"),
         )
+
+    class WriteFailed(Exception):
+        def __init__(self, message):
+            self.message = message
+        def __unicode__(self):
+            return repr(self.message)

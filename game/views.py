@@ -10,6 +10,7 @@ from django.core import serializers
 import random
 import string
 import json
+import datetime
 
 from game.models import Game, GameLog
 from rule.models import Edition
@@ -40,7 +41,7 @@ def create(request):
         response_data['game_id'] = g.hashkey
     except (MultiValueDictKeyError, IntegrityError) as e:
         response_data['success'] = False
-        response_data['errmsg'] = e.message
+        response_data['errmsg'] = type(e).__name__ + ": " + e.message
 
     return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
 
@@ -73,12 +74,12 @@ def delete(request):
 
     except (MultiValueDictKeyError, Game.DoesNotExist, Game.UnableToDelete) as e:
         response_data['success'] = False
-        response_data['errmsg'] = e.message
+        response_data['errmsg'] = type(e).__name__ + ": " + e.message
 
     return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
 
 def _get_user_id_from_post(request):
-    return request.POST['user_id']
+    return request.POST.get('user_id', None)
 
 @csrf_exempt
 @requires_access_token(func_get_user_id=_get_user_id_from_post)
@@ -98,7 +99,7 @@ def join(request):
 
     except (MultiValueDictKeyError, Game.DoesNotExist, Game.UnableToJoin, Player.DoesNotExist) as e:
         response_data['success'] = False
-        response_data['errmsg'] = e.message
+        response_data['errmsg'] = type(e).__name__ + ": " + e.message
 
     return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
 
@@ -120,7 +121,7 @@ def quit(request):
 
     except (MultiValueDictKeyError, Game.DoesNotExist, Game.UnableToQuit, Player.DoesNotExist) as e:
         response_data['success'] = False
-        response_data['errmsg'] = e.message
+        response_data['errmsg'] = type(e).__name__ + ": " + e.message
 
     return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
 
@@ -138,6 +139,7 @@ def start(request):
                 and g.players.filter(user_id=request.POST['user_id']).exists() 
                 and len(g.players.all()) == g.num_players ):
                 g.status = Game.IN_PROGRESS
+                g.date_started = datetime.datetime.now()
                 g.save()
                 # TODO queue initial action
                 response_data['success'] = True
@@ -146,6 +148,44 @@ def start(request):
 
     except (MultiValueDictKeyError, Game.DoesNotExist, Player.DoesNotExist, Game.UnableToStart) as e:
         response_data['success'] = False
-        response_data['errmsg'] = e.message
+        response_data['errmsg'] = type(e).__name__ + ": " + e.message
+
+    return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
+
+def _get_user_id_from_action(request):
+    body = json.loads(request.body)
+    return body['user_id'] if 'user_id' in body else None
+
+@csrf_exempt
+@requires_access_token(func_get_user_id=_get_user_id_from_action)
+def action(request):
+    response_data = {}
+
+    try:
+        body = json.loads(request.body)
+
+        with transaction.atomic():
+            g = Game.objects.get(hashkey=body['game_id'])
+            p = Player.objects.get(user_id=body['user_id'])
+            action = body['action']
+            if ( ( g.status == Game.IN_PROGRESS ) 
+                and g.players.filter(user_id=body['user_id']).exists() ):
+                g.last_lsn += 1
+                a = GameLog(
+                        game=g,
+                        player=p,
+                        lsn=g.last_lsn,
+                        log=action,
+                    )
+                g.save()
+                a.save()
+                # TODO queue initial action
+                response_data['success'] = True
+            else :
+                raise GameLog.WriteFailed('unable to write action log')
+
+    except (KeyError, ValueError, Game.DoesNotExist, Player.DoesNotExist, GameLog.WriteFailed) as e:
+        response_data['success'] = False
+        response_data['errmsg'] = type(e).__name__ + ": " + e.message
 
     return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")

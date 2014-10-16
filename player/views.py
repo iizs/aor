@@ -5,6 +5,7 @@ from django.core import serializers
 from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
 from django.utils.dateparse import parse_datetime
+from django.utils.datastructures import MultiValueDictKeyError
 
 import json
 import requests
@@ -46,12 +47,12 @@ def create(request):
     except IntegrityError as e:
         response_data['success'] = False
         # TODO DB 오류 메시지가 그대로 노출되므로 좋지 않다. 수정 필요
-        response_data['errmsg'] = e.message
+        response_data['errmsg'] = type(e).__name__ + ": " + e.message
 
     return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
 
 def _get_user_id(request):
-    return request.GET['user_id']
+    return request.GET.get('user_id', None)
 
 #@requires_access_token(func_get_user_id=_get_user_id)
 @requires_access_token()
@@ -64,9 +65,9 @@ def get(request):
         response_data['user_id'] = p.user_id
         response_data['nickname'] = p.name
         #response_data['email'] = p.email
-    except Player.DoesNotExist as e:
+    except (Player.DoesNotExist, MultiValueDictKeyError) as e:
         response_data['success'] = False
-        response_data['errmsg'] = e.message
+        response_data['errmsg'] = type(e).__name__ + ": " + e.message
     return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
 
 def registerToken(request):
@@ -94,8 +95,8 @@ def registerToken(request):
 
         response_data['success'] = True
 
-    except (AccessToken.Invalid, Player.DoesNotExist) as e:
+    except (AccessToken.Invalid, Player.DoesNotExist, MultiValueDictKeyError) as e:
         response_data['success'] = False
-        response_data['errmsg'] = e.message 
+        response_data['errmsg'] = type(e).__name__ + ": " + e.message
 
     return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
