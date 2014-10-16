@@ -84,6 +84,7 @@ class GameLog(models.Model):
         (FAILED, 'Failed'),
     )
     game = models.ForeignKey('Game')
+    player = models.ForeignKey(Player)
     lsn = models.SmallIntegerField('log sequence number')
     timestamp = models.DateTimeField('timestamp', auto_now_add=True)
     status = models.CharField(max_length=1, choices=STATUS, default=ACCEPTED)
