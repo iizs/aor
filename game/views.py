@@ -2,7 +2,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.utils.datastructures import MultiValueDictKeyError
 from django.core import serializers
@@ -27,14 +27,15 @@ def create(request):
 
     try:
         hashkey = _generate_hashkey()
-        while ( Game.objects.get_or_none(hashkey=hashkey) != None ) :
-            hashkey = _generate_hashkey()
-        g = Game(
-                num_players=request.POST['num_players'],
-                edition=Edition.objects.get(name=request.POST['edition']),
-                hashkey=hashkey,
-            )
-        g.save()
+        with transaction.atomic():
+            while ( Game.objects.get_or_none(hashkey=hashkey) != None ) :
+                hashkey = _generate_hashkey()
+            g = Game(
+                    num_players=request.POST['num_players'],
+                    edition=Edition.objects.get(name=request.POST['edition']),
+                    hashkey=hashkey,
+                )
+            g.save()
         response_data['success'] = True
         response_data['game_id'] = g.hashkey
     except (MultiValueDictKeyError, IntegrityError) as e:
@@ -61,13 +62,14 @@ def delete(request):
     response_data = {}
 
     try:
-        g = Game.objects.get(hashkey=request.POST['game_id'])
+        with transaction.atomic():
+            g = Game.objects.get(hashkey=request.POST['game_id'])
 
-        if ( g.status == Game.WAITING and g.players.count() == 0 ) :
-            g.delete()
-            response_data['success'] = True
-        else :
-            raise Game.UnableToDelete('unable to delete game')
+            if ( g.status == Game.WAITING and g.players.count() == 0 ) :
+                g.delete()
+                response_data['success'] = True
+            else :
+                raise Game.UnableToDelete('unable to delete game')
 
     except (MultiValueDictKeyError, Game.DoesNotExist, Game.UnableToDelete) as e:
         response_data['success'] = False
@@ -84,14 +86,15 @@ def join(request):
     response_data = {}
 
     try:
-        g = Game.objects.get(hashkey=request.POST['game_id'])
-        p = Player.objects.get(user_id=request.POST['user_id'])
+        with transaction.atomic():
+            g = Game.objects.get(hashkey=request.POST['game_id'])
+            p = Player.objects.get(user_id=request.POST['user_id'])
 
-        if ( g.status == Game.WAITING and g.players.count() < g.num_players ) :
-            g.players.add(p)
-            response_data['success'] = True
-        else :
-            raise Game.UnableToJoin('unable to join game')
+            if ( g.status == Game.WAITING and g.players.count() < g.num_players ) :
+                g.players.add(p)
+                response_data['success'] = True
+            else :
+                raise Game.UnableToJoin('unable to join game')
 
     except (MultiValueDictKeyError, Game.DoesNotExist, Game.UnableToJoin, Player.DoesNotExist) as e:
         response_data['success'] = False
@@ -105,14 +108,15 @@ def quit(request):
     response_data = {}
 
     try:
-        g = Game.objects.get(hashkey=request.POST['game_id'])
-        p = Player.objects.get(user_id=request.POST['user_id'])
+        with transaction.atomic():
+            g = Game.objects.get(hashkey=request.POST['game_id'])
+            p = Player.objects.get(user_id=request.POST['user_id'])
 
-        if ( g.status == Game.WAITING  ) :
-            g.players.remove(p)
-            response_data['success'] = True
-        else :
-            raise Game.UnableToQuit('unable to quit game')
+            if ( g.status == Game.WAITING  ) :
+                g.players.remove(p)
+                response_data['success'] = True
+            else :
+                raise Game.UnableToQuit('unable to quit game')
 
     except (MultiValueDictKeyError, Game.DoesNotExist, Game.UnableToQuit, Player.DoesNotExist) as e:
         response_data['success'] = False
