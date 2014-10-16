@@ -16,6 +16,7 @@ from game.models import Game, GameLog
 from rule.models import Edition
 from player.models import Player
 from player.decorators import requires_access_token
+from game.tasks import process_action
 
 def _generate_hashkey(size=15):
     c = string.letters + string.digits
@@ -152,6 +153,7 @@ def start(request):
 
     return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
 
+# can raise (KeyError, ValueError):
 def _get_user_id_from_action(request):
     body = json.loads(request.body)
     return body['user_id'] if 'user_id' in body else None
@@ -179,8 +181,9 @@ def action(request):
                     )
                 g.save()
                 a.save()
-                # TODO queue initial action
+                process_action.delay(g.hashkey, a.lsn)
                 response_data['success'] = True
+                response_data['lsn'] = a.lsn
             else :
                 raise GameLog.WriteFailed('unable to write action log')
 

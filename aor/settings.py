@@ -61,7 +61,7 @@ ROOT_URLCONF = 'aor.urls'
 WSGI_APPLICATION = 'aor.wsgi.application'
 
 # Celery
-CELERY_ACCEPT_CONTENT = ['json']
+CELERY_ACCEPT_CONTENT = ['pickle', 'json']
 
 
 # Database
