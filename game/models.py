@@ -1,5 +1,7 @@
 from django.db import models
 
+import json
+
 from player.models import Player
 from rule.models import Edition
 
@@ -106,3 +108,124 @@ class GameLog(models.Model):
             self.message = message
         def __unicode__(self):
             return repr(self.message)
+
+class HouseBiddingLog:
+    def __init__(self):
+        self.user_id = None
+        self.house = None
+        self.bid = 0
+        self.order = 0
+
+# house name
+class HouseTurnLog:
+    def __init__(self):
+        self.turn = 0
+        self.cash = 0
+        self.tokens = 0
+        self.card_income = 0
+        self.card_damage = 0
+        self.buy_card = False
+        self.ship_upgrade = False
+        self.buy_advance = 0
+        self.card_stabilization = 0
+        self.tax = 0
+
+    def written_cash(self):
+        return self.cash - abs( self.token );
+
+    #def current_cash(self):
+
+
+class HouseStatus:
+    def __init__(self):
+        self.user_id = None
+        self.misery = 0
+        self.advances = {}
+        self.hands = []
+        self.cash = 40
+        self.tokens = 0
+        self.written_cash = 0
+        self.ship_type = None
+        self.ship_capacity = 0
+        self.turn_logs = []
+        self.turn_logs.append( HouseTurnLog() )
+
+class GameStatus:
+    HOUSES = ( 'Gen', 'Ven', 'Bar', 'Par', 'Lon', 'Ham' )
+
+    def __init__(self, game=None):
+        self.edition = None
+        self.game_id = None
+        self.num_players = 0
+
+        self.houses = {}
+        for h in self.HOUSES:
+            self.houses[h] = HouseStatus()
+
+        self.play_order = []
+        self.house_bidding_log = []
+        for n in range(6):
+            self.play_order.append(None)
+
+        self.epoch = 1
+        self.state = None
+        self.discard_stack = []
+        self.draw_stack = []
+        self.leader_stack = []
+        self.shortage = []
+        self.surplus = []
+        self.provinces = {}
+        self.card_log = {}
+        self.card_log['epoch_1'] = {}
+        self.card_log['epoch_2'] = {}
+        self.card_log['epoch_3'] = {}
+        self.at_war = []
+
+        if game != None: 
+            if isinstance(game, Game) != True:
+                raise TypeError('game must be a Game instance')
+
+            self.edition = str(game.edition)
+            self.game_id = game.hashkey
+            self.num_players = game.num_players
+
+class GameStatusEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, GameStatus):
+            return obj.__dict__
+        if isinstance(obj, HouseStatus):
+            return obj.__dict__
+        if isinstance(obj, HouseTurnLog):
+            return obj.__dict__
+        if isinstance(obj, HouseBiddingLog):
+            return obj.__dict__
+        return json.JSONEncoder.default(self, obj)
+
+class GameStatusDecoder(json.JSONDecoder):
+    def decode(self, s):
+        d = json.JSONDecoder.decode(self, s)
+        g = GameStatus()
+        g.__dict__ = d
+
+        house_bidding_log = []
+        for l in g.house_bidding_log:
+            hbl = HouseBiddingLog()
+            hbl.__dict__ = l
+            house_bidding_log.append(hbl)
+        g.house_bidding_log = house_bidding_log
+
+        houses = {}
+        for key, value in g.houses.iteritems():
+            h = HouseStatus()
+            h.__dict__ = value
+            turn_logs = []
+            for l in h.turn_logs:
+                tl = HouseTurnLog()
+                tl.__dict__ = l
+                turn_logs.append(tl)
+            h.turn_logs = turn_logs
+
+            houses[key] = h
+        g.houses = houses
+
+        return g
