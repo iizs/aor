@@ -12,7 +12,7 @@ import string
 import json
 import datetime
 
-from game.models import Game, GameLog
+from game.models import Game, GameLog, GameStatus, HouseStatus, HouseTurnLog, HouseBiddingLog, GameStatusEncoder, GameStatusDecoder
 from rule.models import Edition
 from player.models import Player
 from player.decorators import requires_access_token
@@ -82,6 +82,9 @@ def delete(request):
 def _get_user_id_from_post(request):
     return request.POST.get('user_id', None)
 
+def _get_user_id_from_get(request):
+    return request.GET.get('user_id', None)
+
 @csrf_exempt
 @requires_access_token(func_get_user_id=_get_user_id_from_post)
 def join(request):
@@ -141,6 +144,9 @@ def start(request):
                 and len(g.players.all()) == g.num_players ):
                 g.status = Game.IN_PROGRESS
                 g.date_started = datetime.datetime.now()
+                info = GameStatus(g)
+                g.initial_info = json.dumps(info, cls=GameStatusEncoder)
+                g.current_info = g.initial_info
                 g.save()
                 # TODO queue initial action
                 response_data['success'] = True
@@ -152,6 +158,22 @@ def start(request):
         response_data['errmsg'] = type(e).__name__ + ": " + e.message
 
     return HttpResponse(json.dumps(response_data, indent=2), content_type="application/json")
+
+@requires_access_token(func_get_user_id=_get_user_id_from_get)
+def get_info(request):
+    response_data = {}
+
+    try:
+        with transaction.atomic():
+            g = Game.objects.get(hashkey=request.GET['game_id'])
+            response_data['info'] = json.loads(g.current_info, cls=GameStatusDecoder)
+            response_data['last_lsn'] = g.last_lsn
+
+    except (MultiValueDictKeyError, Game.DoesNotExist) as e:
+        response_data['success'] = False
+        response_data['errmsg'] = type(e).__name__ + ": " + e.message
+    return HttpResponse(json.dumps(response_data, cls=GameStatusEncoder, indent=2), content_type="application/json")
+        
 
 # can raise (KeyError, ValueError):
 def _get_user_id_from_action(request):

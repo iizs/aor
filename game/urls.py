@@ -10,5 +10,6 @@ urlpatterns = patterns('',
     url(r'^quit/$', views.quit),
     url(r'^start/$', views.start),
     url(r'^action/$', views.action),
+    url(r'^getInfo/$', views.get_info),
     #url(r'^registerToken/$', views.registerToken),
 )
