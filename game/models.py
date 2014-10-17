@@ -136,7 +136,7 @@ class HouseTurnLog:
     #def current_cash(self):
 
 
-class HouseStatus:
+class HouseInfo:
     def __init__(self):
         self.user_id = None
         self.misery = 0
@@ -150,7 +150,7 @@ class HouseStatus:
         self.turn_logs = []
         self.turn_logs.append( HouseTurnLog() )
 
-class GameStatus:
+class GameInfo:
     HOUSES = ( 'Gen', 'Ven', 'Bar', 'Par', 'Lon', 'Ham' )
 
     def __init__(self, game=None):
@@ -160,7 +160,7 @@ class GameStatus:
 
         self.houses = {}
         for h in self.HOUSES:
-            self.houses[h] = HouseStatus()
+            self.houses[h] = HouseInfo()
 
         self.play_order = []
         self.house_bidding_log = []
@@ -189,11 +189,11 @@ class GameStatus:
             self.game_id = game.hashkey
             self.num_players = game.num_players
 
-class GameStatusEncoder(json.JSONEncoder):
+class GameInfoEncoder(json.JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, GameStatus):
+        if isinstance(obj, GameInfo):
             return obj.__dict__
-        if isinstance(obj, HouseStatus):
+        if isinstance(obj, HouseInfo):
             return obj.__dict__
         if isinstance(obj, HouseTurnLog):
             return obj.__dict__
@@ -201,10 +201,10 @@ class GameStatusEncoder(json.JSONEncoder):
             return obj.__dict__
         return json.JSONEncoder.default(self, obj)
 
-class GameStatusDecoder(json.JSONDecoder):
+class GameInfoDecoder(json.JSONDecoder):
     def decode(self, s):
         d = json.JSONDecoder.decode(self, s)
-        g = GameStatus()
+        g = GameInfo()
         g.__dict__ = d
 
         house_bidding_log = []
@@ -216,7 +216,7 @@ class GameStatusDecoder(json.JSONDecoder):
 
         houses = {}
         for key, value in g.houses.iteritems():
-            h = HouseStatus()
+            h = HouseInfo()
             h.__dict__ = value
             turn_logs = []
             for l in h.turn_logs:

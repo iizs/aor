@@ -12,7 +12,7 @@ import string
 import json
 import datetime
 
-from game.models import Game, GameLog, GameStatus, HouseStatus, HouseTurnLog, HouseBiddingLog, GameStatusEncoder, GameStatusDecoder
+from game.models import Game, GameLog, GameInfo, HouseInfo, HouseTurnLog, HouseBiddingLog, GameInfoEncoder, GameInfoDecoder
 from rule.models import Edition
 from player.models import Player
 from player.decorators import requires_access_token
@@ -144,8 +144,8 @@ def start(request):
                 and len(g.players.all()) == g.num_players ):
                 g.status = Game.IN_PROGRESS
                 g.date_started = datetime.datetime.now()
-                info = GameStatus(g)
-                g.initial_info = json.dumps(info, cls=GameStatusEncoder)
+                info = GameInfo(g)
+                g.initial_info = json.dumps(info, cls=GameInfoEncoder)
                 g.current_info = g.initial_info
                 g.save()
                 # TODO queue initial action
@@ -166,13 +166,13 @@ def get_info(request):
     try:
         with transaction.atomic():
             g = Game.objects.get(hashkey=request.GET['game_id'])
-            response_data['info'] = json.loads(g.current_info, cls=GameStatusDecoder)
+            response_data['info'] = json.loads(g.current_info, cls=GameInfoDecoder)
             response_data['last_lsn'] = g.last_lsn
 
     except (MultiValueDictKeyError, Game.DoesNotExist) as e:
         response_data['success'] = False
         response_data['errmsg'] = type(e).__name__ + ": " + e.message
-    return HttpResponse(json.dumps(response_data, cls=GameStatusEncoder, indent=2), content_type="application/json")
+    return HttpResponse(json.dumps(response_data, cls=GameInfoEncoder, indent=2), content_type="application/json")
         
 
 # can raise (KeyError, ValueError):
