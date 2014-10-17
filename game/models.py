@@ -151,7 +151,16 @@ class HouseInfo:
         self.turn_logs.append( HouseTurnLog() )
 
 class GameInfo:
-    HOUSES = ( 'Gen', 'Ven', 'Bar', 'Par', 'Lon', 'Ham' )
+    GEN = 'Gen'
+    VEN = 'Ven'
+    BAR = 'Bar'
+    PAR = 'Par'
+    LON = 'Lon'
+    HAM = 'Ham'
+    HOUSES = ( GEN, VEN, BAR, PAR, LON, HAM )
+
+    ALL = 'all'
+    INIT_STATE = 'init'
 
     def __init__(self, game=None):
         self.edition = None
@@ -168,7 +177,7 @@ class GameInfo:
             self.play_order.append(None)
 
         self.epoch = 1
-        self.state = None
+        self.state = GameInfo.ALL + '.' + GameInfo.INIT_STATE
         self.discard_stack = []
         self.draw_stack = []
         self.leader_stack = []
