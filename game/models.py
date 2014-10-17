@@ -160,6 +160,7 @@ class GameInfo:
     HOUSES = ( GEN, VEN, BAR, PAR, LON, HAM )
 
     ALL = 'all'
+    AUTO = 'auto'
     INIT_STATE = 'init'
 
     def __init__(self, game=None):
@@ -177,7 +178,7 @@ class GameInfo:
             self.play_order.append(None)
 
         self.epoch = 1
-        self.state = GameInfo.ALL + '.' + GameInfo.INIT_STATE
+        self.state = GameInfo.AUTO + '.' + GameInfo.INIT_STATE
         self.discard_stack = []
         self.draw_stack = []
         self.leader_stack = []
