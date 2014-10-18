@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.db import models
 
 import json
@@ -92,11 +93,21 @@ class GameLog(models.Model):
         (FAILED, 'Failed'),
     )
     game = models.ForeignKey('Game')
-    player = models.ForeignKey(Player)
+    player = models.ForeignKey(Player, null=True, blank=True)
     lsn = models.SmallIntegerField('log sequence number')
     timestamp = models.DateTimeField('timestamp', auto_now_add=True)
     status = models.CharField(max_length=1, choices=STATUS, default=ACCEPTED)
     log = models.TextField()
+
+    def __unicode__(self):
+        return str(self.game) + ': ' + str(self.lsn)
+    def set_log(self, log_dict={}):
+        ''' convert log dict info json and store to log field '''
+        log_json = json.dumps(log)
+        self.log = log_json
+
+    def get_log_as_dict(self):
+        return json.loads(self.log)
 
     class Meta:
         unique_together = (
@@ -239,3 +250,9 @@ class GameInfoDecoder(json.JSONDecoder):
         g.houses = houses
 
         return g
+
+class Action:
+    ALL             =   'all'
+    AUTO            =   'auto'
+
+    INITIALIZE      =   'init'

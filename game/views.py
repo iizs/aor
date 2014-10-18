@@ -12,7 +12,7 @@ import string
 import json
 import datetime
 
-from game.models import Game, GameLog, GameInfo, HouseInfo, HouseTurnLog, HouseBiddingLog, GameInfoEncoder, GameInfoDecoder
+from game.models import Game, GameLog, GameInfo, HouseInfo, HouseTurnLog, HouseBiddingLog, GameInfoEncoder, GameInfoDecoder, Action
 from rule.models import Edition
 from player.models import Player
 from player.decorators import requires_access_token
@@ -147,7 +147,15 @@ def start(request):
                 info = GameInfo(g)
                 g.initial_info = json.dumps(info, cls=GameInfoEncoder)
                 g.current_info = g.initial_info
+                g.last_lsn += 1
+                a = GameLog(
+                        game=g,
+                        player=None,
+                        lsn=g.last_lsn,
+                        log={ 'action': Action.ALL + '.' + Action.INITIALIZE }
+                    )
                 g.save()
+                a.save()
                 # TODO queue initial action
                 response_data['success'] = True
             else :
