@@ -152,11 +152,11 @@ def start(request):
                         game=g,
                         player=None,
                         lsn=g.last_lsn,
-                        log={ 'action': Action.ALL + '.' + Action.INITIALIZE }
+                        log={ 'action': Action.DEAL_CARDS }
                     )
                 g.save()
                 a.save()
-                # TODO queue initial action
+                process_action.delay(g.hashkey, a.lsn)
                 response_data['success'] = True
             else :
                 raise Game.UnableToStart('unable to start game')

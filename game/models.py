@@ -170,10 +170,6 @@ class GameInfo:
     HAM = 'Ham'
     HOUSES = ( GEN, VEN, BAR, PAR, LON, HAM )
 
-    ALL = 'all'
-    AUTO = 'auto'
-    INIT_STATE = 'init'
-
     def __init__(self, game=None):
         self.edition = None
         self.game_id = None
@@ -189,7 +185,7 @@ class GameInfo:
             self.play_order.append(None)
 
         self.epoch = 1
-        self.state = GameInfo.AUTO + '.' + GameInfo.INIT_STATE
+        self.state = GameState.AUTO + '.' + GameState.INITIALIZE
         self.discard_stack = []
         self.draw_stack = []
         self.leader_stack = []
@@ -252,7 +248,11 @@ class GameInfoDecoder(json.JSONDecoder):
         return g
 
 class Action:
+    DEAL_CARDS =   'deal_cards'
+
+class GameState:
     ALL             =   'all'
     AUTO            =   'auto'
 
     INITIALIZE      =   'init'
+    HOUSE_BIDDING   =   'housebidding'
