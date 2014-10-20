@@ -152,8 +152,8 @@ def start(request):
                         game=g,
                         player=None,
                         lsn=g.last_lsn,
-                        log={ 'action': Action.DEAL_CARDS }
                     )
+                a.set_log(log_dict={ 'action': Action.DEAL_CARDS })
                 g.save()
                 a.save()
                 process_action.delay(g.hashkey, a.lsn)

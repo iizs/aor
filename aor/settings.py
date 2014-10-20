@@ -62,6 +62,7 @@ WSGI_APPLICATION = 'aor.wsgi.application'
 
 # Celery
 CELERY_ACCEPT_CONTENT = ['pickle', 'json']
+CELERY_REDIRECT_STDOUTS_LEVEL = 'INFO'
 
 
 # Database
