@@ -18,8 +18,10 @@ def process_action(game_id, lsn):
                 logger.info('Applying ' + str(l))
                 action_dict = l.get_log_as_dict()
                 state = GameState.getInstance(info)
-                state.action(action_dict['action'], params=action_dict)
+                rand_dict = state.action(action_dict['action'], params=action_dict)
                 info = state.info
+                action_dict['random'] = rand_dict
+                l.set_log(action_dict)
                 l.status = GameLog.CONFIRMED
             except GameState.NotSupportedAction as e:
                 l.status = GameLog.FAILED

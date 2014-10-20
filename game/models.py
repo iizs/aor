@@ -219,20 +219,23 @@ class GameInfo(object):
                 h.user_id = p.user_id
                 self.house_bidding_log.append(h)
 
-    def shuffle_cards(self, epoch):
+    def shuffle_cards(self, epoch, rand_dict):
         cards = []
         edition = Edition.objects.filter(name__exact=self.edition)
         if epoch == 0 :
-            hcards = HistoryCard.objects                    \
-                        .filter(edition__exact=edition)     \
-                        .filter(epoch__exact=1)             \
-                        .filter(shuffle_later__exact=False)
-            for c in hcards:
-                cards.append(c.short_name)
+            if 'draw_stack' in rand_dict.keys():
+                cards = rand_dict['draw_stack']
+            else:
+                hcards = HistoryCard.objects                    \
+                            .filter(edition__exact=edition)     \
+                            .filter(epoch__exact=1)             \
+                            .filter(shuffle_later__exact=False)
+                for c in hcards:
+                    cards.append(c.short_name)
+                random.shuffle(cards)
         else:
             pass
 
-        random.shuffle(cards)
         self.discard_stack = []
         self.draw_stack = cards
 
@@ -321,9 +324,12 @@ class InitState(GameState):
     def action(self, a, params={}):
         if a == Action.DEAL_CARDS :
             # 초기화 상태이니, 무조건 카드를 섞고, 배분한다.
-            self.info.shuffle_cards(0)
+            rand_dict = params['random'] if 'random' in params.keys() else {}
+            self.info.shuffle_cards(0, rand_dict)
+            rand_dict['draw_stack'] = list(self.info.draw_stack)
             self.info.draw_initial_cards()
             self.info.state = GameState.ALL + '.' + GameState.HOUSE_BIDDING
+            return rand_dict
         else:
             return super(InitState, self).action(a, params)
 

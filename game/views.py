@@ -156,10 +156,12 @@ def start(request):
                 a.set_log(log_dict={ 'action': Action.DEAL_CARDS })
                 g.save()
                 a.save()
-                process_action.delay(g.hashkey, a.lsn)
                 response_data['success'] = True
             else :
                 raise Game.UnableToStart('unable to start game')
+
+        # 여기까지 왔으면, transaction은 정상 종료된 것이다.
+        process_action.delay(g.hashkey, a.lsn)
 
     except (MultiValueDictKeyError, Game.DoesNotExist, Player.DoesNotExist, Game.UnableToStart) as e:
         response_data['success'] = False
@@ -209,6 +211,8 @@ def rollback(request):
                 GameLog.objects.filter(game=g, lsn__lte=lsn).update(status=GameLog.ACCEPTED)
                 process_action.delay(g.hashkey, lsn)
 
+        if lsn > 0 :
+            process_action.delay(g.hashkey, a.lsn)
         response_data['success'] = True
     except (MultiValueDictKeyError, Game.DoesNotExist) as e:
         response_data['success'] = False
@@ -243,11 +247,13 @@ def action(request):
                     )
                 g.save()
                 a.save()
-                process_action.delay(g.hashkey, a.lsn)
                 response_data['success'] = True
                 response_data['lsn'] = a.lsn
             else :
                 raise GameLog.WriteFailed('unable to write action log')
+        
+        # 여기까지 왔으면, transaction은 정상 종료된 것이다.
+        process_action.delay(g.hashkey, a.lsn)
 
     except (KeyError, ValueError, Game.DoesNotExist, Player.DoesNotExist, GameLog.WriteFailed) as e:
         response_data['success'] = False
