@@ -175,13 +175,45 @@ def get_info(request):
         with transaction.atomic():
             g = Game.objects.get(hashkey=request.GET['game_id'])
             response_data['info'] = json.loads(g.current_info, cls=GameInfoDecoder)
+            response_data['applied_lsn'] = g.applied_lsn
             response_data['last_lsn'] = g.last_lsn
+            response_data['success'] = True
 
     except (MultiValueDictKeyError, Game.DoesNotExist) as e:
         response_data['success'] = False
         response_data['errmsg'] = type(e).__name__ + ": " + e.message
     return HttpResponse(json.dumps(response_data, cls=GameInfoEncoder, indent=2), content_type="application/json")
         
+@csrf_exempt
+@requires_access_token(func_get_user_id=_get_user_id_from_post)
+def rollback(request):
+    response_data = {}
+
+    try:
+        with transaction.atomic():
+            lsn = int(request.POST['lsn'])
+            g = Game.objects.get(hashkey=request.POST['game_id'])
+            if lsn == 0 :
+                g.status = Game.WAITING
+                g.last_lsn = 0
+                g.applied_lsn = 0
+                g.current_info = g.initial_info
+                g.save()
+                GameLog.objects.filter(game=g).delete()
+            else :
+                g.last_lsn = lsn
+                g.applied_lsn = 0
+                g.current_info = g.initial_info
+                g.save()
+                GameLog.objects.filter(game=g, lsn__gt=lsn).delete()
+                GameLog.objects.filter(game=g, lsn__lte=lsn).update(status=GameLog.ACCEPTED)
+                process_action.delay(g.hashkey, lsn)
+
+        response_data['success'] = True
+    except (MultiValueDictKeyError, Game.DoesNotExist) as e:
+        response_data['success'] = False
+        response_data['errmsg'] = type(e).__name__ + ": " + e.message
+    return HttpResponse(json.dumps(response_data, cls=GameInfoEncoder, indent=2), content_type="application/json")
 
 # can raise (KeyError, ValueError):
 def _get_user_id_from_action(request):

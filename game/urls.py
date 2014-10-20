@@ -11,5 +11,6 @@ urlpatterns = patterns('',
     url(r'^start/$', views.start),
     url(r'^action/$', views.action),
     url(r'^getInfo/$', views.get_info),
+    url(r'^rollback/$', views.rollback),
     #url(r'^registerToken/$', views.registerToken),
 )

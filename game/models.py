@@ -56,6 +56,8 @@ class Game(models.Model):
         d['status'] = self.status
         d['edition'] = str(self.edition)
         d['num_players'] = self.num_players
+        d['last_lsn'] = self.last_lsn
+        d['applied_lsn'] = self.applied_lsn
         d['players'] = []
         for p in self.players.all():
             d['players'].append(str(p))
