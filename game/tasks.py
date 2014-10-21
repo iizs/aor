@@ -2,7 +2,7 @@ from django.db import IntegrityError, transaction
 from celery import task
 from celery.utils.log import get_task_logger
 
-from game.models import Game, GameLog, GameState, GameInfo
+from game.models import Game, GameLog, GameState, GameInfo, Action
 #, GameLog, GameInfo, HouseInfo, HouseTurnLog, HouseBiddingLog, GameInfoEncoder, GameInfoDecoder, Action
 
 @task()
@@ -23,9 +23,9 @@ def process_action(game_id, lsn):
                 action_dict['random'] = rand_dict
                 l.set_log(action_dict)
                 l.status = GameLog.CONFIRMED
-            except GameState.NotSupportedAction as e:
+            except GameState.NotSupportedAction, Action.InvalidParameter as e:
                 l.status = GameLog.FAILED
-                logger.error('GameState.NotSupportedAction: ' + str(l))
+                logger.error(type(e).__name__ + ": " + e.message)
             g.applied_lsn = l.lsn
             l.save()
         g.set_current_info(info)
