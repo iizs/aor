@@ -239,12 +239,6 @@ class GameInfo(object):
         self.discard_stack = []
         self.draw_stack = cards
 
-    def draw_initial_cards(self):
-        for h in self.house_bidding_log:
-            h.draw_cards.append(self.draw_stack.pop())
-            h.draw_cards.append(self.draw_stack.pop())
-            h.draw_cards.append(self.draw_stack.pop())
-
 class GameInfoEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, GameInfo):
@@ -287,7 +281,16 @@ class GameInfoDecoder(json.JSONDecoder):
         return g
 
 class Action(object):
-    DEAL_CARDS =   'deal_cards'
+    DEAL_CARDS      =   'deal_cards'
+    DISCARD         =   'discard'
+    BID             =   'bid'
+    CHOOSE          =   'choose'
+
+    class InvalidParameter(Exception):
+        def __init__(self, message):
+            self.message = message
+        def __unicode__(self):
+            return repr(self.message)
 
 class GameState(object):
     ALL             =   'all'
@@ -295,16 +298,18 @@ class GameState(object):
 
     INITIALIZE      =   'init'
     HOUSE_BIDDING   =   'housebidding'
+    CHOOSE_CAPITAL  =   'choose_capital'
 
     STATE_MAPS = {
         INITIALIZE : 'InitState',
         HOUSE_BIDDING : 'HouseBiddingState',
+        CHOOSE_CAPITAL  :   'ChooseCapitalState'
     }
 
     def __init__(self, info):
         self.info = info
 
-    def action(self, a, params={}):
+    def action(self, a, user_id=None, params={}):
         raise GameState.NotSupportedAction(type(self).__name__ + ' cannot handle ' + type(a).__name__) 
 
     @staticmethod
@@ -320,19 +325,48 @@ class GameState(object):
         def __unicode__(self):
             return repr(self.message)
 
+    class InvalidAction(Exception):
+        def __init__(self, message):
+            self.message = message
+        def __unicode__(self):
+            return repr(self.message)
+
 class InitState(GameState):
-    def action(self, a, params={}):
+    def action(self, a, user_id=None, params={}):
         if a == Action.DEAL_CARDS :
             # 초기화 상태이니, 무조건 카드를 섞고, 배분한다.
             rand_dict = params['random'] if 'random' in params.keys() else {}
             self.info.shuffle_cards(0, rand_dict)
             rand_dict['draw_stack'] = list(self.info.draw_stack)
-            self.info.draw_initial_cards()
+            for h in self.info.house_bidding_log:
+                h.draw_cards.append(self.info.draw_stack.pop())
+                h.draw_cards.append(self.info.draw_stack.pop())
+                h.draw_cards.append(self.info.draw_stack.pop())
             self.info.state = GameState.ALL + '.' + GameState.HOUSE_BIDDING
             return rand_dict
         else:
             return super(InitState, self).action(a, params)
 
 class HouseBiddingState(GameState):
-    def action(self, a, params={}):
-        return super(HouseBiddingState, self).action(a, params)
+    def action(self, a, user_id=None, params={}):
+        if a == Action.DISCARD :
+            if user_id == None :
+                raise Action.InvalidParameter(Action.DISCARD + " requires 'used_id'")
+            if 'card' not in params.keys() :
+                raise Action.InvalidParameter(Action.DISCARD + " requires 'card' parameter.")
+            for h in self.info.house_bidding_log:
+                if h.user_id == user_id :
+                    if h.discard_card != None:
+                        raise GameState.InvalidAction( "User '" + user_id + "' already discarded '" + h.discard_card + "'")
+                    if params['card'] not in h.draw_cards:
+                        raise Action.InvalidParameter( "User '" + user_id + "' cannot discard '" + params['card'] + "'")
+                    h.draw_cards.remove(params['card'])
+                    h.discard_card = params['card']
+                    self.info.discard_stack.append(params['card'])
+            return None
+        else:
+            return super(HouseBiddingState, self).action(a, params)
+
+class ChooseCapitalState(GameState):
+    def action(self, a, user_id=None, params={}):
+        return super(ChooseCapitalState, self).action(a, params)
