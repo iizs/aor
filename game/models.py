@@ -285,6 +285,7 @@ class Action(object):
     DISCARD         =   'discard'
     BID             =   'bid'
     CHOOSE          =   'choose'
+    DETERMINE_ORDER =   'determine_order'
 
     class InvalidParameter(Exception):
         def __init__(self, message):
@@ -310,7 +311,7 @@ class GameState(object):
         self.info = info
 
     def action(self, a, user_id=None, params={}):
-        raise GameState.NotSupportedAction(type(self).__name__ + ' cannot handle ' + type(a).__name__) 
+        raise GameState.NotSupportedAction(type(self).__name__ + ' cannot handle ' + a) 
 
     @staticmethod
     def getInstance(info):
@@ -363,9 +364,27 @@ class HouseBiddingState(GameState):
                     h.draw_cards.remove(params['card'])
                     h.discard_card = params['card']
                     self.info.discard_stack.append(params['card'])
-            return {}
+        elif a == Action.BID :
+            if user_id == None :
+                raise Action.InvalidParameter(Action.BID + " requires 'used_id'")
+            if 'bid' not in params.keys() :
+                raise Action.InvalidParameter(Action.BID + " requires 'bid' parameter.")
+            for h in self.info.house_bidding_log:
+                if h.user_id == user_id :
+                    h.bid = int(params['bid'])
         else:
             return super(HouseBiddingState, self).action(a, params)
+
+        bidding_complete = True
+        for h in self.info.house_bidding_log:
+            if h.discard_card != None and h.bid != None:
+                continue
+            bidding_complete = False
+            break
+
+        if bidding_complete == True:
+            return { 'queue_action': { 'action': Action.DETERMINE_ORDER } }
+        return {}
 
 class ChooseCapitalState(GameState):
     def action(self, a, user_id=None, params={}):
