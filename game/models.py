@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.db import models
 
+from celery.utils.log import get_task_logger
+
 import json
 import random
 
@@ -135,6 +137,7 @@ class HouseBiddingLog(object):
         self.order = None
         self.draw_cards = []
         self.discard_card = None
+        self.dice_rolled = []
 
 # house name
 class HouseTurnLog(object):
@@ -336,8 +339,10 @@ class InitState(GameState):
     def action(self, a, user_id=None, params={}):
         if a == Action.DEAL_CARDS :
             # 초기화 상태이니, 무조건 카드를 섞고, 배분한다.
+            # log replay를 하는 경우에는 과거에 섞은것과 동일하게 섞는다.
             rand_dict = params['random'] if 'random' in params.keys() else {}
             self.info.shuffle_cards(0, rand_dict)
+
             rand_dict['draw_stack'] = list(self.info.draw_stack)
             for h in self.info.house_bidding_log:
                 h.draw_cards.append(self.info.draw_stack.pop())
@@ -347,6 +352,18 @@ class InitState(GameState):
             return { 'random': rand_dict }
         else:
             return super(InitState, self).action(a, params)
+
+def cmp_house_bid(x, y):
+    diff = x.bid - y.bid
+    i = 0
+    while diff == 0 and i < len(x.dice_rolled) and i < len(y.dice_rolled) : 
+        diff = x.dice_rolled[i] - y.dice_rolled[i]
+        i += 1
+    return diff
+
+def roll_dice():
+    return random.randint(1, 6)
+    
 
 class HouseBiddingState(GameState):
     def action(self, a, user_id=None, params={}):
@@ -372,6 +389,35 @@ class HouseBiddingState(GameState):
             for h in self.info.house_bidding_log:
                 if h.user_id == user_id :
                     h.bid = int(params['bid'])
+        elif a == Action.DETERMINE_ORDER :
+            tie_breaking = True
+
+            if 'random' in params.keys() :
+                rand_dict = params['random']
+                for l in self.info.house_bidding_log:
+                    l.dice_rolled = rand_dict[l.user_id]
+                    tie_breaking = False
+
+            self.info.house_bidding_log.sort(cmp=cmp_house_bid, reverse=True)
+
+            while tie_breaking :
+                roll = {}
+                for i in range(len(self.info.house_bidding_log)-1):
+                    for j in range(i+1, len(self.info.house_bidding_log)):
+                        if cmp_house_bid(self.info.house_bidding_log[i], self.info.house_bidding_log[j]) == 0 :
+                            roll[i] = True
+                            roll[j] = True
+                if roll:
+                    for i in roll.keys():
+                        self.info.house_bidding_log[i].dice_rolled.append(roll_dice())
+                    self.info.house_bidding_log.sort(cmp=cmp_house_bid, reverse=True)
+                else:
+                    tie_breaking = False
+
+            rand_dict = {}
+            for l in self.info.house_bidding_log:
+                rand_dict[l.user_id] = l.dice_rolled
+            return { 'random': rand_dict  }
         else:
             return super(HouseBiddingState, self).action(a, params)
 
