@@ -21,9 +21,9 @@ def process_action(game_id, lsn):
                 action_dict = l.get_log_as_dict()
                 state = GameState.getInstance(info)
                 user_id = l.player.user_id if l.player != None else None
-                rand_dict = state.action(action_dict['action'], user_id=user_id, params=action_dict)
+                result = state.action(action_dict['action'], user_id=user_id, params=action_dict)
                 info = state.info
-                action_dict['random'] = rand_dict
+                action_dict['random'] = result['random'] if 'random' in result.keys() else None
                 l.set_log(action_dict)
                 l.status = GameLog.CONFIRMED
             except (GameState.NotSupportedAction, GameState.InvalidAction, Action.InvalidParameter) as e:

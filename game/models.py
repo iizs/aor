@@ -343,7 +343,7 @@ class InitState(GameState):
                 h.draw_cards.append(self.info.draw_stack.pop())
                 h.draw_cards.append(self.info.draw_stack.pop())
             self.info.state = GameState.ALL + '.' + GameState.HOUSE_BIDDING
-            return rand_dict
+            return { 'random': rand_dict }
         else:
             return super(InitState, self).action(a, params)
 
@@ -363,7 +363,7 @@ class HouseBiddingState(GameState):
                     h.draw_cards.remove(params['card'])
                     h.discard_card = params['card']
                     self.info.discard_stack.append(params['card'])
-            return None
+            return {}
         else:
             return super(HouseBiddingState, self).action(a, params)
 
