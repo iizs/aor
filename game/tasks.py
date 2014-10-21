@@ -34,7 +34,7 @@ def process_action(game_id, lsn):
                 l.status = GameLog.CONFIRMED
             except (GameState.NotSupportedAction, GameState.InvalidAction, Action.InvalidParameter) as e:
                 l.status = GameLog.FAILED
-                logger.error(type(e).__name__ + ": " + e.message)
+                logger.error(str(l) + " :" + type(e).__name__ + ": " + e.message)
             g.applied_lsn = l.lsn
             l.save()
         g.set_current_info(info)
