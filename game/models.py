@@ -414,6 +414,8 @@ class HouseBiddingState(GameState):
                 else:
                     tie_breaking = False
 
+            self.info.state = self.info.house_bidding_log[0].user_id + '.' + GameState.CHOOSE_CAPITAL
+
             rand_dict = {}
             for l in self.info.house_bidding_log:
                 rand_dict[l.user_id] = l.dice_rolled
