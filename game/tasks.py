@@ -8,7 +8,7 @@ from game.models import Game, GameLog, GameState, GameInfo, Action, GameInfoDeco
 #, GameLog, GameInfo, HouseInfo, HouseTurnLog, HouseBiddingLog, GameInfoEncoder, GameInfoDecoder, Action
 
 @task()
-def process_action(game_id, lsn):
+def process_action(game_id, lsn, replay=False):
     logger = get_task_logger(__name__)
     action_queue = []
 
@@ -39,18 +39,19 @@ def process_action(game_id, lsn):
             l.save()
         g.set_current_info(info)
 
-        for aq in action_queue:
-            g.last_lsn += 1
-            a = GameLog(
-                    game=g,
-                    player=None,
-                    lsn=g.last_lsn,
-                )
-            a.set_log(log_dict=aq)
-            a.save()
+        if replay == False:
+            for aq in action_queue:
+                g.last_lsn += 1
+                a = GameLog(
+                        game=g,
+                        player=None,
+                        lsn=g.last_lsn,
+                    )
+                a.set_log(log_dict=aq)
+                a.save()
         g.save()
 
-    if action_queue:
+    if action_queue and replay == False:
         process_action.delay(g.hashkey, g.last_lsn)
 
     return g.applied_lsn

@@ -211,7 +211,7 @@ def rollback(request):
                 GameLog.objects.filter(game=g, lsn__lte=lsn).update(status=GameLog.ACCEPTED)
 
         if lsn > 0 :
-            process_action.delay(g.hashkey, lsn)
+            process_action.delay(g.hashkey, lsn, replay=True)
         response_data['success'] = True
     except (MultiValueDictKeyError, Game.DoesNotExist) as e:
         response_data['success'] = False
