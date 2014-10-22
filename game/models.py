@@ -141,9 +141,9 @@ class HouseBiddingLog(object):
 
 # house name
 class HouseTurnLog(object):
-    def __init__(self):
-        self.turn = 0
-        self.cash = 0
+    def __init__(self, turn=0, cash=0):
+        self.turn = turn
+        self.cash = cash
         self.tokens = 0
         self.card_income = 0
         self.card_damage = 0
@@ -160,18 +160,23 @@ class HouseTurnLog(object):
 
 
 class HouseInfo(object):
-    def __init__(self):
-        self.user_id = None
+    def __init__(self, user_id=None, cash=40, hands=[]):
+        self.user_id = user_id
         self.misery = 0
         self.advances = {}
-        self.hands = []
-        self.cash = 40
+        self.hands = hands
+        self.cash = cash
         self.tokens = 0
         self.written_cash = 0
         self.ship_type = None
         self.ship_capacity = 0
         self.turn_logs = []
-        self.turn_logs.append( HouseTurnLog() )
+        self.turn_logs.append( 
+            HouseTurnLog(
+                turn=1,
+                cash=self.cash,
+                ) 
+            )
 
 class GameInfo(object):
     GEN = 'Gen'
@@ -310,8 +315,10 @@ class GameState(object):
         CHOOSE_CAPITAL  :   'ChooseCapitalState'
     }
 
-    def __init__(self, info):
+    def __init__(self, info, actor='all', depends_on=None):
         self.info = info
+        self.actor = actor
+        self.depends_on = depends_on
 
     def action(self, a, user_id=None, params={}):
         raise GameState.NotSupportedAction(type(self).__name__ + ' cannot handle ' + a) 
@@ -320,8 +327,10 @@ class GameState(object):
     def getInstance(info):
         state_part = info.state.split('.', 3)
         name = state_part[1]
+        actor = state_part[0]
+        remains = state_part[2] if len(state_part) == 3 else None
         n = GameState.STATE_MAPS[name] if name in GameState.STATE_MAPS.keys() else None
-        return globals()[n](info) if n in globals().keys() else None
+        return globals()[n](info, actor=actor, depends_on=remains) if n in globals().keys() else None
 
     class NotSupportedAction(Exception):
         def __init__(self, message):
@@ -363,8 +372,14 @@ def cmp_house_bid(x, y):
 
 def roll_dice():
     return random.randint(1, 6)
-    
 
+def roll_dices():
+    return { 
+        "white": roll_dice(),
+        "black": roll_dice(),
+        "green": roll_dice(),
+    }
+    
 class HouseBiddingState(GameState):
     def action(self, a, user_id=None, params={}):
         if a == Action.DISCARD :
@@ -375,9 +390,13 @@ class HouseBiddingState(GameState):
             for h in self.info.house_bidding_log:
                 if h.user_id == user_id :
                     if h.discard_card != None:
-                        raise GameState.InvalidAction( "User '" + user_id + "' already discarded '" + h.discard_card + "'")
+                        raise GameState.InvalidAction( 
+                                "User '" + user_id + "' already discarded '" + h.discard_card + "'"
+                                )
                     if params['card'] not in h.draw_cards:
-                        raise Action.InvalidParameter( "User '" + user_id + "' cannot discard '" + params['card'] + "'")
+                        raise Action.InvalidParameter( 
+                                "User '" + user_id + "' cannot discard '" + params['card'] + "'"
+                                )
                     h.draw_cards.remove(params['card'])
                     h.discard_card = params['card']
                     self.info.discard_stack.append(params['card'])
@@ -436,4 +455,37 @@ class HouseBiddingState(GameState):
 
 class ChooseCapitalState(GameState):
     def action(self, a, user_id=None, params={}):
-        return super(ChooseCapitalState, self).action(a, params)
+        if a == Action.CHOOSE :
+            if user_id != self.actor :
+                raise GameState.InvalidAction( 
+                        "Not user '" + user_id + "' turn"
+                        )
+            if 'choice' not in params.keys() :
+                raise Action.InvalidParameter(Action.CHOOSE + " requires 'choice' parameter.")
+            choice = params['choice']
+
+            available = list(GameInfo.HOUSES[0:self.info.num_players])
+            for h in self.info.houses.keys():
+                available.remove(h)
+
+            if choice not in available:
+                raise Action.InvalidParameter("'" + choice + "' is already chosen or not allowed.")
+
+            bidinfo = self.info.house_bidding_log[len(self.info.houses)]
+
+            h = HouseInfo(
+                    user_id=user_id,
+                    hands = list(bidinfo.draw_cards),
+                    cash = 40 - bidinfo.bid,
+            )
+            self.info.houses[choice] = h
+
+            if len(self.info.houses) < self.info.num_players:
+                self.info.state = self.info.house_bidding_log[len(self.info.houses)].user_id \
+                                    + '.' + GameState.CHOOSE_CAPITAL
+            else:
+                pass
+
+            return {}
+        else:
+            return super(ChooseCapitalState, self).action(a, params)
