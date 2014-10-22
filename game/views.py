@@ -199,13 +199,15 @@ def rollback(request):
                 g.status = Game.WAITING
                 g.last_lsn = 0
                 g.applied_lsn = 0
-                g.current_info = g.initial_info
+                info = GameInfo(g)
+                g.current_info = json.dumps(info, cls=GameInfoEncoder)
                 g.save()
                 GameLog.objects.filter(game=g).delete()
             else :
                 g.last_lsn = lsn
                 g.applied_lsn = 0
-                g.current_info = g.initial_info
+                info = GameInfo(g)
+                g.current_info = json.dumps(info, cls=GameInfoEncoder)
                 g.save()
                 GameLog.objects.filter(game=g, lsn__gt=lsn).delete()
                 GameLog.objects.filter(game=g, lsn__lte=lsn).update(status=GameLog.ACCEPTED)
