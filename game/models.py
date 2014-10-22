@@ -144,7 +144,7 @@ class HouseTurnLog(object):
     def __init__(self, turn=0, cash=0):
         self.turn = turn
         self.cash = cash
-        self.tokens = 0
+        self.tokens = None
         self.card_income = 0
         self.card_damage = 0
         self.buy_card = False
@@ -170,9 +170,10 @@ class HouseInfo(object):
         self.advances = {}
         self.hands = hands
         self.cash = cash
-        self.tokens = 0
+        self.tokens_in_stock = 36
+        self.tokens_in_hand = 0
         self.written_cash = 0
-        self.ship_type = HouseInfo.SHIP_GALLEY
+        self.ship_type = None
         self.ship_capacity = 0
         self.turn_logs = []
 
@@ -195,8 +196,7 @@ class GameInfo(object):
         self.num_players = 0
 
         self.houses = {}
-        #for h in self.HOUSES:
-            #self.houses[h] = HouseInfo()
+        self.players_map = {}
 
         self.play_order = []
         self.house_bidding_log = []
@@ -504,6 +504,7 @@ class ChooseCapitalState(GameState):
                     cash = 40 - bidinfo.bid,
             )
             self.info.houses[choice] = h
+            self.info.players_map[user_id] = choice
 
             if len(self.info.houses) < self.info.num_players:
                 self.info.state = self.info.house_bidding_log[len(self.info.houses)].user_id \
@@ -527,4 +528,24 @@ class ChooseCapitalState(GameState):
 
 class TokenBiddingState(GameState):
     def action(self, a, user_id=None, params={}):
-        return super(TokenBiddingState, self).action(a, params)
+        if a == Action.BID :
+            if user_id == None :
+                raise Action.InvalidParameter(Action.BID + " requires 'used_id'")
+            if 'bid' not in params.keys() :
+                raise Action.InvalidParameter(Action.BID + " requires 'bid' parameter.")
+            hinfo = self.info.houses[ self.info.players_map[user_id] ]
+            turn_log = hinfo.turn_logs[ self.info.turn - 1 ]
+            turn_log.tokens = int(params['bid'])
+        else:
+            return super(TokenBiddingState, self).action(a, params)
+
+        bidding_complete = True
+        for key in self.info.houses:
+            hinfo = self.info.houses[ key ]
+            if hinfo.turn_logs[ self.info.turn - 1 ].tokens == None:
+                bidding_complete = False
+                break
+
+        if bidding_complete == True:
+            return { 'queue_action': { 'action': Action.DETERMINE_ORDER } }
+        return {}
