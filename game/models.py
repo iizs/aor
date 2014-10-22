@@ -191,6 +191,10 @@ class GameInfo(object):
     HAM = 'Ham'
     HOUSES = ( GEN, VEN, BAR, PAR, LON, HAM )
 
+    SHUFFLE_INIT = 0
+    SHUFFLE_TURN1 = 1
+    SHUFFLE_TURN2 = 2
+
     def __init__(self, game=None):
         self.edition = 'european' #None
         self.game_id = None
@@ -231,25 +235,45 @@ class GameInfo(object):
                 h.user_id = p.user_id
                 self.house_bidding_log.append(h)
 
-    def shuffle_cards(self, epoch, rand_dict):
+    def shuffle_cards(self, method, rand_dict):
         cards = []
         edition = Edition.objects.filter(name__exact=self.edition)
-        if epoch == 0 :
-            if 'draw_stack' in rand_dict.keys():
-                cards = rand_dict['draw_stack']
-            else:
+
+        if 'draw_stack' in rand_dict.keys():
+            cards = rand_dict['draw_stack']
+        else :
+            if method == GameInfo.SHUFFLE_INIT :
                 hcards = HistoryCard.objects                    \
                             .filter(edition__exact=edition)     \
                             .filter(epoch__exact=1)             \
                             .filter(shuffle_later__exact=False)
                 for c in hcards:
                     cards.append(c.short_name)
-                random.shuffle(cards)
-        else:
-            pass
+            elif method == GameInfo.SHUFFLE_TURN1 :
+                cards = self.discard_stack + self.draw_stack
+                if self.num_players in (3, 4) :
+                    hcards = HistoryCard.objects                    \
+                                .filter(edition__exact=edition)     \
+                                .filter(epoch__exact=1)             \
+                                .filter(shuffle_later__exact=True)
+                    for c in hcards:
+                        cards.append(c.short_name)
+            elif method == GameInfo.SHUFFLE_TURN2 :
+                if self.num_players in (5, 6) :
+                    hcards = HistoryCard.objects                    \
+                                .filter(edition__exact=edition)     \
+                                .filter(epoch__exact=1)             \
+                                .filter(shuffle_later__exact=True)
+                    for c in hcards:
+                        cards.append(c.short_name)
+            else:
+                pass
+            random.shuffle(cards)
 
-        self.discard_stack = []
         self.draw_stack = cards
+        if method == GameInfo.SHUFFLE_TURN2 :
+            return
+        self.discard_stack = []
 
 class GameInfoEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -354,7 +378,7 @@ class InitState(GameState):
             # 초기화 상태이니, 무조건 카드를 섞고, 배분한다.
             # log replay를 하는 경우에는 과거에 섞은것과 동일하게 섞는다.
             rand_dict = params['random'] if 'random' in params.keys() else {}
-            self.info.shuffle_cards(0, rand_dict)
+            self.info.shuffle_cards(GameInfo.SHUFFLE_INIT, rand_dict)
 
             rand_dict['draw_stack'] = list(self.info.draw_stack)
             for h in self.info.house_bidding_log:
