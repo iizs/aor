@@ -175,12 +175,6 @@ class HouseInfo(object):
         self.ship_type = HouseInfo.SHIP_GALLEY
         self.ship_capacity = 0
         self.turn_logs = []
-        self.turn_logs.append( 
-            HouseTurnLog(
-                turn=1,
-                cash=self.cash,
-                ) 
-            )
 
 class GameInfo(object):
     GEN = 'Gen'
@@ -210,6 +204,7 @@ class GameInfo(object):
             self.play_order.append(None)
 
         self.epoch = 1
+        self.turn = 1
         self.state = GameState.AUTO + '.' + GameState.INITIALIZE
         self.discard_stack = []
         self.draw_stack = []
@@ -336,11 +331,13 @@ class GameState(object):
     INITIALIZE      =   'init'
     HOUSE_BIDDING   =   'housebidding'
     CHOOSE_CAPITAL  =   'choose_capital'
+    TOKEN_BIDDING  =   'token_bidding'
 
     STATE_MAPS = {
         INITIALIZE : 'InitState',
         HOUSE_BIDDING : 'HouseBiddingState',
-        CHOOSE_CAPITAL  :   'ChooseCapitalState'
+        CHOOSE_CAPITAL  :   'ChooseCapitalState',
+        TOKEN_BIDDING  :   'TokenBiddingState',
     }
 
     def __init__(self, info, actor='all', depends_on=None):
@@ -512,8 +509,22 @@ class ChooseCapitalState(GameState):
                 self.info.state = self.info.house_bidding_log[len(self.info.houses)].user_id \
                                     + '.' + GameState.CHOOSE_CAPITAL
             else:
-                pass
+                self.info.state = GameState.ALL + '.' + GameState.TOKEN_BIDDING
+                self.info.epoch = 1
+                self.info.turn = 1
+                for key in self.info.houses:
+                    h = self.info.houses[key]
+                    h.turn_logs.append( 
+                        HouseTurnLog(
+                            turn=self.info.turn,
+                            cash=h.cash,
+                            ) 
+                        )
 
             return {}
         else:
             return super(ChooseCapitalState, self).action(a, params)
+
+class TokenBiddingState(GameState):
+    def action(self, a, user_id=None, params={}):
+        return super(TokenBiddingState, self).action(a, params)
