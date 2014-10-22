@@ -160,6 +160,10 @@ class HouseTurnLog(object):
 
 
 class HouseInfo(object):
+    SHIP_GALLEY = 'galley'
+    SHIP_SEAWROTHY = 'seaworthy'
+    SHIP_OCEANGOING = 'oceangoing'
+
     def __init__(self, user_id=None, cash=40, hands=[]):
         self.user_id = user_id
         self.misery = 0
@@ -168,7 +172,7 @@ class HouseInfo(object):
         self.cash = cash
         self.tokens = 0
         self.written_cash = 0
-        self.ship_type = None
+        self.ship_type = HouseInfo.SHIP_GALLEY
         self.ship_capacity = 0
         self.turn_logs = []
         self.turn_logs.append( 
