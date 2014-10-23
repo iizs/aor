@@ -647,7 +647,7 @@ class TokenBiddingState(GameState):
                 choice = int(params['choice'])
                 tie_break = self.info.play_order_tie_break
                 bid = str(self.info.getTurnLog( user_id ).tokens)
-                logger = get_task_logger('game.tasks.process_action')
+                response = {}
 
                 possible_choice = range(1, len(tie_break['ties'][bid]) + 1)
                 for k in tie_break['ties'][bid]:
@@ -659,10 +659,17 @@ class TokenBiddingState(GameState):
 
                 tie_break['order_choice'][user_id] = choice
                 tie_break['resolve_order'].remove(user_id)
+                possible_choice.remove(choice)
 
                 if tie_break['resolve_order'] :
                     self.info.play_order_tie_break = tie_break
                     self.info.state = tie_break['resolve_order'][0] + '.' + GameState.TOKEN_BIDDING
+                    if len(possible_choice) == 1 :
+                        response['queue_action'] = { 
+                            'action': Action.CHOOSE, 
+                            'choice': possible_choice[0], 
+                            '_player': tie_break['resolve_order'][0],
+                            }
                 else:
                     p_list = list(self.info.players_map.keys())
                     p_list.sort(cmp=cmp_token_bid_after_tie_break(self.info))
@@ -671,6 +678,6 @@ class TokenBiddingState(GameState):
                     # TODO state transition
                     pass
 
-                return {}
+                return response
             else:
                 return super(TokenBiddingState, self).action(a, params)

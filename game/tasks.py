@@ -5,6 +5,7 @@ from celery.utils.log import get_task_logger
 import json
 
 from game.models import Game, GameLog, GameState, GameInfo, Action, GameInfoDecoder
+from player.models import Player
 #, GameLog, GameInfo, HouseInfo, HouseTurnLog, HouseBiddingLog, GameInfoEncoder, GameInfoDecoder, Action
 
 @task()
@@ -42,9 +43,10 @@ def process_action(game_id, lsn, replay=False):
         if replay == False:
             for aq in action_queue:
                 g.last_lsn += 1
+                p = Player.objects.get(user_id=aq['_player']) if '_player' in aq else None
                 a = GameLog(
                         game=g,
-                        player=None,
+                        player=p,
                         lsn=g.last_lsn,
                     )
                 a.set_log(log_dict=aq)
