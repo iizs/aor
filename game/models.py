@@ -202,8 +202,6 @@ class GameInfo(object):
 
         self.play_order = []
         self.house_bidding_log = []
-        for n in range(6):
-            self.play_order.append(None)
 
         self.epoch = 1
         self.turn = 1
@@ -240,6 +238,26 @@ class GameInfo(object):
         if turn == None:
             turn = self.turn
         return self.getHouseInfo(player).turn_logs[turn - 1]
+
+    def get_house_choice_order(self, player) :
+        for i in range(len(self.house_bidding_log)):
+            if self.house_bidding_log[i].user_id == player :
+                return i
+        # Exception을 raise하는 것이 더 좋을지도...
+        return None
+
+    def clear_play_order(self):
+        self.play_order = []
+
+    def append_play_order(self, player):
+        if ( self.num_players == 3 and len(self.play_order) in (0, 2, 4) ) \
+            or ( self.num_players == 4 and len(self.play_order) in (1, 3) ) :
+            self.player_order.append(None)
+
+        self.play_order.append(player)
+
+        if self.num_players == 5 and len(self.play_order) == 5 :
+            self.play_order.append(None)
 
     def shuffle_cards(self, method, rand_dict):
         cards = []
@@ -408,19 +426,28 @@ def cmp_house_bid(x, y):
         i += 1
     return diff
 
-def cmp_token_bid(info):
+def cmp_token_bid_before_tie_break(info):
     def inner(player_x, player_y, info=info):
-        logger = get_task_logger('game.tasks.process_action')
         turn = info.turn
         bid_x = info.getTurnLog( player_x ).tokens
         bid_y = info.getTurnLog( player_y ).tokens
-        logger.info( str(bid_x) + ", " + str(bid_y))
         diff = bid_x - bid_y
         if diff == 0 :
-            play_order_x = info.getTurnLog( player_x ).play_order
-            play_order_y = info.getTurnLog( player_y ).play_order
-            if play_order_x != None and play_order_y != None:
-                diff = play_order_x - play_order_y
+            diff = info.get_house_choice_order(player_y) - info.get_house_choice_order(player_x)
+        return diff
+    return inner
+
+def cmp_token_bid_after_tie_break(info):
+    def inner(player_x, player_y, info=info):
+        turn = info.turn
+        bid_x = info.getTurnLog( player_x ).tokens
+        bid_y = info.getTurnLog( player_y ).tokens
+        diff = bid_x - bid_y
+        if diff == 0 :
+            tie_break = info.play_order_tie_break
+            tb_x = tie_break['order_choice'][player_x]
+            tb_y = tie_break['order_choice'][player_y]
+            diff = tb_x - tb_y
         return diff
     return inner
 
@@ -511,9 +538,7 @@ class ChooseCapitalState(GameState):
     def action(self, a, user_id=None, params={}):
         if a == Action.CHOOSE :
             if user_id != self.actor :
-                raise GameState.InvalidAction( 
-                        "Not user '" + user_id + "' turn"
-                        )
+                raise GameState.InvalidAction( "Not user '" + user_id + "' turn")
             if 'choice' not in params.keys() :
                 raise Action.InvalidParameter(Action.CHOOSE + " requires 'choice' parameter.")
             choice = params['choice']
@@ -567,18 +592,37 @@ class TokenBiddingState(GameState):
                 turn_log = hinfo.turn_logs[ self.info.turn - 1 ]
                 turn_log.tokens = int(params['bid'])
             elif a == Action.DETERMINE_ORDER :
+                self.info.clear_play_order()
                 p_list = list(self.info.players_map.keys())
-                p_list.sort(cmp=cmp_token_bid(self.info))
+                p_list.sort(cmp=cmp_token_bid_before_tie_break(self.info))
 
-                #tie = {}
-                #for i in range(len(p_list)-1):
-                    #if cmp_token_bid(p_list[i], p_list[i+1]) == 0 :
-                        #tie[p_list[i]] = True
-                        #tie[p_list[i]] = True
-                #if tie:
-                    #for k in tie.keys():
-                        #pass
-                self.info.play_order = p_list
+                for i in range(len(p_list) - 1):
+                    if self.info.getTurnLog( p_list[i] ).tokens == self.info.getTurnLog( p_list[i+1] ).tokens :
+                        # Tie breaking required
+                        self.info.clear_play_order()
+
+                        tie_break = { 'resolve_order': [], 'ties': {}, 'order_choice': {}}
+                        for n in range(len(p_list)):
+                            bid = str(self.info.getTurnLog( p_list[n] ).tokens)
+                            if bid not in tie_break['ties'].keys() :
+                                tie_break['ties'][ bid ] = []
+                            tie_break['ties'][ bid ].append( p_list[n] )
+                            tie_break['resolve_order'].append( p_list[n] )
+
+                        for k in tie_break['ties']:
+                            if len(tie_break['ties'][k]) == 1 :
+                                tie_break['resolve_order'].remove( tie_break['ties'][k][0] )
+
+                        self.info.play_order_tie_break = tie_break
+                        self.info.state = tie_break['resolve_order'][0] + '.' + GameState.TOKEN_BIDDING
+                        return {}
+
+                    self.info.append_play_order( p_list[i] )
+
+                # Here, len(p_list) == 1 
+                self.info.append_play_order( p_list[len(p_list)-1] )
+
+                # TODO state transition
                 return {}
             else:
                 return super(TokenBiddingState, self).action(a, params)
@@ -594,4 +638,39 @@ class TokenBiddingState(GameState):
                 return { 'queue_action': { 'action': Action.DETERMINE_ORDER } }
             return {}
         else :
-            pass
+            if a == Action.CHOOSE:
+                if user_id != self.actor :
+                    raise GameState.InvalidAction( "Not user '" + user_id + "' turn")
+                if 'choice' not in params.keys() :
+                    raise Action.InvalidParameter(Action.CHOOSE + " requires 'choice' parameter.")
+
+                choice = int(params['choice'])
+                tie_break = self.info.play_order_tie_break
+                bid = str(self.info.getTurnLog( user_id ).tokens)
+                logger = get_task_logger('game.tasks.process_action')
+
+                possible_choice = range(1, len(tie_break['ties'][bid]) + 1)
+                for k in tie_break['ties'][bid]:
+                    if k in tie_break['order_choice'] :
+                        possible_choice.remove(tie_break['order_choice'][k])
+
+                if choice not in possible_choice :
+                    raise Action.InvalidParameter("invalid 'choice' value" + str(choice))
+
+                tie_break['order_choice'][user_id] = choice
+                tie_break['resolve_order'].remove(user_id)
+
+                if tie_break['resolve_order'] :
+                    self.info.play_order_tie_break = tie_break
+                    self.info.state = tie_break['resolve_order'][0] + '.' + GameState.TOKEN_BIDDING
+                else:
+                    p_list = list(self.info.players_map.keys())
+                    p_list.sort(cmp=cmp_token_bid_after_tie_break(self.info))
+                    for p in p_list:
+                        self.info.append_play_order( p )
+                    # TODO state transition
+                    pass
+
+                return {}
+            else:
+                return super(TokenBiddingState, self).action(a, params)
