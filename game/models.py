@@ -152,6 +152,8 @@ class HouseTurnLog(object):
         self.buy_advance = 0
         self.card_stabilization = 0
         self.tax = 0
+        # tie breaking 때 선택한 값
+        self.play_order = None
 
     def written_cash(self):
         return self.cash - abs( self.token );
@@ -229,6 +231,15 @@ class GameInfo(object):
                 h = HouseBiddingLog()
                 h.user_id = p.user_id
                 self.house_bidding_log.append(h)
+
+    def getHouseInfo(self, player):
+        return self.houses[ self.players_map[ player ] ]
+
+    def getTurnLog(self, player, turn=None):
+        ''' turn is 1-based '''
+        if turn == None:
+            turn = self.turn
+        return self.getHouseInfo(player).turn_logs[turn - 1]
 
     def shuffle_cards(self, method, rand_dict):
         cards = []
@@ -346,7 +357,9 @@ class GameState(object):
         self.depends_on = depends_on
 
     def action(self, a, user_id=None, params={}):
-        raise GameState.NotSupportedAction(type(self).__name__ + ' cannot handle ' + a) 
+        raise GameState.NotSupportedAction(
+                    type(self).__name__ + '( ' + str(self.actor) + ', ' + str(self.depends_on) 
+                    + ' ) cannot handle ' + a) 
 
     @staticmethod
     def getInstance(info):
@@ -394,6 +407,22 @@ def cmp_house_bid(x, y):
         diff = x.dice_rolled[i] - y.dice_rolled[i]
         i += 1
     return diff
+
+def cmp_token_bid(info):
+    def inner(player_x, player_y, info=info):
+        logger = get_task_logger('game.tasks.process_action')
+        turn = info.turn
+        bid_x = info.getTurnLog( player_x ).tokens
+        bid_y = info.getTurnLog( player_y ).tokens
+        logger.info( str(bid_x) + ", " + str(bid_y))
+        diff = bid_x - bid_y
+        if diff == 0 :
+            play_order_x = info.getTurnLog( player_x ).play_order
+            play_order_y = info.getTurnLog( player_y ).play_order
+            if play_order_x != None and play_order_y != None:
+                diff = play_order_x - play_order_y
+        return diff
+    return inner
 
 def roll_dice():
     return random.randint(1, 6)
@@ -446,6 +475,7 @@ class HouseBiddingState(GameState):
 
             while tie_breaking :
                 roll = {}
+                # TODO single-loop 로 가능할 듯 
                 for i in range(len(self.info.house_bidding_log)-1):
                     for j in range(i+1, len(self.info.house_bidding_log)):
                         if cmp_house_bid(self.info.house_bidding_log[i], self.info.house_bidding_log[j]) == 0 :
@@ -528,24 +558,41 @@ class ChooseCapitalState(GameState):
 
 class TokenBiddingState(GameState):
     def action(self, a, user_id=None, params={}):
-        if a == Action.BID :
-            if user_id == None :
-                raise Action.InvalidParameter(Action.BID + " requires 'used_id'")
-            if 'bid' not in params.keys() :
-                raise Action.InvalidParameter(Action.BID + " requires 'bid' parameter.")
-            hinfo = self.info.houses[ self.info.players_map[user_id] ]
-            turn_log = hinfo.turn_logs[ self.info.turn - 1 ]
-            turn_log.tokens = int(params['bid'])
-        else:
-            return super(TokenBiddingState, self).action(a, params)
+        if self.actor == GameState.ALL:
+            if a == Action.BID :
+                if user_id == None :
+                    raise Action.InvalidParameter(Action.BID + " requires 'used_id'")
+                if 'bid' not in params.keys() :
+                    raise Action.InvalidParameter(Action.BID + " requires 'bid' parameter.")
+                hinfo = self.info.houses[ self.info.players_map[user_id] ]
+                turn_log = hinfo.turn_logs[ self.info.turn - 1 ]
+                turn_log.tokens = int(params['bid'])
+            elif a == Action.DETERMINE_ORDER :
+                p_list = list(self.info.players_map.keys())
+                p_list.sort(cmp=cmp_token_bid(self.info))
 
-        bidding_complete = True
-        for key in self.info.houses:
-            hinfo = self.info.houses[ key ]
-            if hinfo.turn_logs[ self.info.turn - 1 ].tokens == None:
-                bidding_complete = False
-                break
+                #tie = {}
+                #for i in range(len(p_list)-1):
+                    #if cmp_token_bid(p_list[i], p_list[i+1]) == 0 :
+                        #tie[p_list[i]] = True
+                        #tie[p_list[i]] = True
+                #if tie:
+                    #for k in tie.keys():
+                        #pass
+                self.info.play_order = p_list
+                return {}
+            else:
+                return super(TokenBiddingState, self).action(a, params)
 
-        if bidding_complete == True:
-            return { 'queue_action': { 'action': Action.DETERMINE_ORDER } }
-        return {}
+            bidding_complete = True
+            for key in self.info.houses:
+                hinfo = self.info.houses[ key ]
+                if hinfo.turn_logs[ self.info.turn - 1 ].tokens == None:
+                    bidding_complete = False
+                    break
+
+            if bidding_complete == True:
+                return { 'queue_action': { 'action': Action.DETERMINE_ORDER } }
+            return {}
+        else :
+            pass
