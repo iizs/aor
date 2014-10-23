@@ -475,12 +475,11 @@ class HouseBiddingState(GameState):
 
             while tie_breaking :
                 roll = {}
-                # TODO single-loop 로 가능할 듯 
+                # 이미 sort 되어 있으므로, single-loop 로 가능하다.
                 for i in range(len(self.info.house_bidding_log)-1):
-                    for j in range(i+1, len(self.info.house_bidding_log)):
-                        if cmp_house_bid(self.info.house_bidding_log[i], self.info.house_bidding_log[j]) == 0 :
-                            roll[i] = True
-                            roll[j] = True
+                    if cmp_house_bid(self.info.house_bidding_log[i], self.info.house_bidding_log[i+1]) == 0 :
+                        roll[i] = True
+                        roll[i+1] = True
                 if roll:
                     for i in roll.keys():
                         self.info.house_bidding_log[i].dice_rolled.append(roll_dice())
