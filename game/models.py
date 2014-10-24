@@ -171,8 +171,8 @@ class HouseInfo(object):
         self.advances = {}
         self.hands = hands
         self.cash = cash
-        self.tokens_in_stock = 36
-        self.tokens_in_hand = 0
+        self.stock_tokens = 36
+        self.expansion_tokens = 0
         self.written_cash = 0
         self.ship_type = None
         self.ship_capacity = 0
@@ -605,6 +605,18 @@ class TokenBiddingState(GameState):
             self.info.turn += 1
             return {}
         elif a == Action.POST_PHASE :
+            for key in self.info.houses:
+                h = self.info.houses[key]
+                l = h.turn_logs[self.info.turn - 1]
+                h.cash = l.cash - abs(l.tokens)
+
+                h.expansion_tokens = l.tokens
+                if h.expansion_tokens < 0 :
+                    h.expansion_tokens = 0
+                if h.expansion_tokens > h.stock_tokens:
+                    h.expansion_tokens = h.stock_tokens
+                h.stock_tokens -= h.expansion_tokens
+
             self.info.state = GameState.ALL + '.' + GameState.DRAW_CARD
             return { 'queue_action':  { 'action': Action.PRE_PHASE } }
         elif a == Action.BID :
