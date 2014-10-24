@@ -152,7 +152,6 @@ class HouseTurnLog(object):
         self.buy_advance = 0
         self.card_stabilization = 0
         self.tax = 0
-        # tie breaking 때 선택한 값
         self.play_order = None
 
     def written_cash(self):
@@ -255,6 +254,7 @@ class GameInfo(object):
             self.player_order.append(None)
 
         self.play_order.append(player)
+        self.getTurnLog(player).play_order = len(self.play_order)
 
         if self.num_players == 5 and len(self.play_order) == 5 :
             self.play_order.append(None)
@@ -534,6 +534,7 @@ class HouseBiddingState(GameState):
             return { 'queue_action': { 'action': Action.DETERMINE_ORDER } }
         return {}
 
+# TODO 마지막 수도는 자동으로 선택되도록 수정하자. token bidding 을 참고하면 될 듯
 class ChooseCapitalState(GameState):
     def action(self, a, user_id=None, params={}):
         if a == Action.CHOOSE :
@@ -675,6 +676,7 @@ class TokenBiddingState(GameState):
                     p_list.sort(cmp=cmp_token_bid_after_tie_break(self.info))
                     for p in p_list:
                         self.info.append_play_order( p )
+                    del self.info.play_order_tie_break
                     # TODO state transition
                     pass
 
