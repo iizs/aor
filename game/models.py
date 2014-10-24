@@ -399,6 +399,12 @@ class Action(object):
         def __unicode__(self):
             return repr(self.message)
 
+def split_state_string(state):
+    state_part = state.split('.', 2)
+    if len(state_part) == 2:
+        state_part.append(None)
+    return state_part
+
 class GameState(object):
     ALL             =   'all'
     AUTO            =   'auto'
@@ -441,10 +447,7 @@ class GameState(object):
 
     @staticmethod
     def getInstance(info):
-        state_part = info.state.split('.', 3)
-        name = state_part[1]
-        actor = state_part[0]
-        remains = state_part[2] if len(state_part) == 3 else None
+        (actor, name, remains) = split_state_string( info.state )
         n = GameState.STATE_MAPS[name] if name in GameState.STATE_MAPS.keys() else None
         return globals()[n](info, actor=actor, depends_on=remains) if n in globals().keys() else None
 
@@ -808,16 +811,18 @@ class DrawCardsState(GameState):
 
             next_state += GameState.AUTO + '.' + GameState.DRAW_CARD
 
-            state_part = next_state.split('.', 3)
-            actor = state_part[0]
-            name = state_part[1]
-            remains = state_part[2] if len(state_part) == 3 else None
+            (actor, name, remains) = split_state_string( next_state )
 
             if actor == GameState.AUTO and name == GameState.DRAW_CARD:
                 response['queue_action'] = { 'action': Action.DEAL_CARDS }
             self.info.state = next_state
 
             return response
+        elif a == Action.POST_PHASE :
+            self.info.state = GameState.AUTO + '.' + GameState.BUY_CARD
+            return { 'queue_action' :  { 'action': Action.PRE_PHASE } }
+        elif a == Action.DEAL_CARDS :
+            return { 'queue_action' :  { 'action': Action.POST_PHASE } }
         return super(DrawCardsState, self).action(a, params)
 
 class ApplyRenaissanceState(GameState):
