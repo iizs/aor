@@ -786,16 +786,19 @@ class TieBreakingState(GameState):
 class DrawCardsState(GameState):
     def action(self, a, user_id=None, params={}):
         if a == Action.PRE_PHASE :
+            response = {}
+            rand_dict = {}
             if self.info.turn == 1 :
                 rand_dict = params['random'] if 'random' in params.keys() else {}
                 self.info.shuffle_cards(GameInfo.SHUFFLE_TURN1, rand_dict)
+                rand_dict['draw_stack'] = list(self.info.draw_stack)
             elif self.info.turn == 2 and self.info.num_players in (5, 6) :
                 rand_dict = params['random'] if 'random' in params.keys() else {}
                 self.info.shuffle_cards(GameInfo.SHUFFLE_TURN2, rand_dict)
-            
+                rand_dict['draw_stack'] = list(self.info.draw_stack)
+           
+            response['random'] = rand_dict
             self.info.reset_renaissance_usage()
-
-            response = {}
             next_state = ''
         
             next_renaissance_player = self.info.get_next_renaissance_player() 
