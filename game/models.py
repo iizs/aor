@@ -200,6 +200,7 @@ class GameInfo(object):
         self.players_map = {}
 
         self.play_order = []
+        self.play_order_tie_break = {}
         self.house_bidding_log = []
 
         self.epoch = 1
@@ -341,6 +342,8 @@ class GameInfoDecoder(json.JSONDecoder):
         return g
 
 class Action(object):
+    PRE_PHASE       =   'pre_phase'
+    POST_PHASE      =   'post_phase'
     DEAL_CARDS      =   'deal_cards'
     DISCARD         =   'discard'
     BID             =   'bid'
@@ -360,13 +363,17 @@ class GameState(object):
     INITIALIZE      =   'init'
     HOUSE_BIDDING   =   'housebidding'
     CHOOSE_CAPITAL  =   'choose_capital'
-    TOKEN_BIDDING  =   'token_bidding'
+    TOKEN_BIDDING   =   'token_bidding'
+    TIE_BREAKING    =   'tie_breaking'
+    DRAW_CARD       =   'draw_card'
 
     STATE_MAPS = {
-        INITIALIZE : 'InitState',
-        HOUSE_BIDDING : 'HouseBiddingState',
-        CHOOSE_CAPITAL  :   'ChooseCapitalState',
-        TOKEN_BIDDING  :   'TokenBiddingState',
+        INITIALIZE      : 'InitState',
+        HOUSE_BIDDING   : 'HouseBiddingState',
+        CHOOSE_CAPITAL  : 'ChooseCapitalState',
+        TOKEN_BIDDING   : 'TokenBiddingState',
+        TIE_BREAKING    : 'TieBreakingState',
+        DRAW_CARD       : 'DrawCardsState',
     }
 
     def __init__(self, info, actor='all', depends_on=None):
@@ -426,7 +433,7 @@ def cmp_house_bid(x, y):
         i += 1
     return diff
 
-def cmp_token_bid_before_tie_break(info):
+def cmp_play_order_before_tie_break(info):
     def inner(player_x, player_y, info=info):
         turn = info.turn
         bid_x = info.getTurnLog( player_x ).tokens
@@ -437,7 +444,7 @@ def cmp_token_bid_before_tie_break(info):
         return diff
     return inner
 
-def cmp_token_bid_after_tie_break(info):
+def cmp_play_order_after_tie_break(info):
     def inner(player_x, player_y, info=info):
         turn = info.turn
         bid_x = info.getTurnLog( player_x ).tokens
@@ -534,7 +541,6 @@ class HouseBiddingState(GameState):
             return { 'queue_action': { 'action': Action.DETERMINE_ORDER } }
         return {}
 
-# TODO 마지막 수도는 자동으로 선택되도록 수정하자. token bidding 을 참고하면 될 듯
 class ChooseCapitalState(GameState):
     def action(self, a, user_id=None, params={}):
         if a == Action.CHOOSE :
@@ -542,7 +548,9 @@ class ChooseCapitalState(GameState):
                 raise GameState.InvalidAction( "Not user '" + user_id + "' turn")
             if 'choice' not in params.keys() :
                 raise Action.InvalidParameter(Action.CHOOSE + " requires 'choice' parameter.")
+
             choice = params['choice']
+            response = {}
 
             available = list(GameInfo.HOUSES[0:self.info.num_players])
             for h in self.info.houses.keys():
@@ -561,13 +569,23 @@ class ChooseCapitalState(GameState):
             self.info.houses[choice] = h
             self.info.players_map[user_id] = choice
 
+            # 마지막 플레이어만 남았다면 자동으로 남은 수도를 선택하도록 함
+            available.remove(choice)
+            if len(available) == 1:
+                response['queue_action'] = { 
+                    'action': Action.CHOOSE, 
+                    'choice': available[0], 
+                    '_player': self.info.house_bidding_log[len(self.info.houses)].user_id,
+                    }
+
             if len(self.info.houses) < self.info.num_players:
                 self.info.state = self.info.house_bidding_log[len(self.info.houses)].user_id \
                                     + '.' + GameState.CHOOSE_CAPITAL
             else:
                 self.info.state = GameState.ALL + '.' + GameState.TOKEN_BIDDING
+                response['queue_action'] =  { 'action': Action.PRE_PHASE } 
                 self.info.epoch = 1
-                self.info.turn = 1
+                self.info.turn = 0
                 for key in self.info.houses:
                     h = self.info.houses[key]
                     h.turn_logs.append( 
@@ -577,26 +595,47 @@ class ChooseCapitalState(GameState):
                             ) 
                         )
 
-            return {}
+            return response
         else:
             return super(ChooseCapitalState, self).action(a, params)
 
 class TokenBiddingState(GameState):
     def action(self, a, user_id=None, params={}):
-        if self.actor == GameState.ALL:
-            if a == Action.BID :
-                if user_id == None :
-                    raise Action.InvalidParameter(Action.BID + " requires 'used_id'")
-                if 'bid' not in params.keys() :
-                    raise Action.InvalidParameter(Action.BID + " requires 'bid' parameter.")
-                hinfo = self.info.houses[ self.info.players_map[user_id] ]
-                turn_log = hinfo.turn_logs[ self.info.turn - 1 ]
-                turn_log.tokens = int(params['bid'])
-            elif a == Action.DETERMINE_ORDER :
-                self.info.clear_play_order()
-                p_list = list(self.info.players_map.keys())
-                p_list.sort(cmp=cmp_token_bid_before_tie_break(self.info))
+        if a == Action.PRE_PHASE :
+            self.info.turn += 1
+            return {}
+        elif a == Action.POST_PHASE :
+            self.info.state = GameState.ALL + '.' + GameState.DRAW_CARD
+            return { 'queue_action':  { 'action': Action.PRE_PHASE } }
+        elif a == Action.BID :
+            if user_id == None :
+                raise Action.InvalidParameter(Action.BID + " requires 'used_id'")
+            if 'bid' not in params.keys() :
+                raise Action.InvalidParameter(Action.BID + " requires 'bid' parameter.")
+            hinfo = self.info.houses[ self.info.players_map[user_id] ]
+            turn_log = hinfo.turn_logs[ self.info.turn - 1 ]
+            turn_log.tokens = int(params['bid'])
 
+            # preceed to determine order ? 
+            bidding_complete = True
+            for key in self.info.houses:
+                hinfo = self.info.houses[ key ]
+                if hinfo.turn_logs[ self.info.turn - 1 ].tokens == None:
+                    bidding_complete = False
+                    break
+
+            response = {}
+            if bidding_complete == True:
+                response['queue_action'] = { 'action': Action.DETERMINE_ORDER }
+
+            return response
+        elif a == Action.DETERMINE_ORDER :
+            self.info.clear_play_order()
+            p_list = list(self.info.players_map.keys())
+
+            tie_break = self.info.play_order_tie_break
+            if not tie_break:
+                p_list.sort(cmp=cmp_play_order_before_tie_break(self.info))
                 for i in range(len(p_list) - 1):
                     if self.info.getTurnLog( p_list[i] ).tokens == self.info.getTurnLog( p_list[i+1] ).tokens :
                         # Tie breaking required
@@ -615,71 +654,68 @@ class TokenBiddingState(GameState):
                                 tie_break['resolve_order'].remove( tie_break['ties'][k][0] )
 
                         self.info.play_order_tie_break = tie_break
-                        self.info.state = tie_break['resolve_order'][0] + '.' + GameState.TOKEN_BIDDING
+                        self.info.state = tie_break['resolve_order'][0] + '.' + GameState.TIE_BREAKING \
+                                        + '.' + GameState.ALL + '.' + GameState.TOKEN_BIDDING
                         return {}
 
                     self.info.append_play_order( p_list[i] )
 
                 # Here, len(p_list) == 1 
                 self.info.append_play_order( p_list[len(p_list)-1] )
+            else : # after tie break
+                p_list.sort(cmp=cmp_play_order_after_tie_break(self.info))
+                for p in p_list:
+                    self.info.append_play_order( p )
+                
+            self.info.play_order_tie_break = {}
+            return { 'queue_action': { 'action': Action.POST_PHASE } }
+        else:
+            return super(TokenBiddingState, self).action(a, params)
 
-                # TODO state transition
-                return {}
+class TieBreakingState(GameState):
+    def action(self, a, user_id=None, params={}):
+        if a == Action.CHOOSE:
+            if user_id != self.actor :
+                raise GameState.InvalidAction( "Not user '" + user_id + "' turn")
+            if 'choice' not in params.keys() :
+                raise Action.InvalidParameter(Action.CHOOSE + " requires 'choice' parameter.")
+
+            choice = int(params['choice'])
+            tie_break = self.info.play_order_tie_break
+            bid = str(self.info.getTurnLog( user_id ).tokens)
+            response = {}
+
+            possible_choice = range(1, len(tie_break['ties'][bid]) + 1)
+            for k in tie_break['ties'][bid]:
+                if k in tie_break['order_choice'] :
+                    possible_choice.remove(tie_break['order_choice'][k])
+
+            if choice not in possible_choice :
+                raise Action.InvalidParameter("invalid 'choice' value" + str(choice))
+
+            tie_break['order_choice'][user_id] = choice
+            tie_break['resolve_order'].remove(user_id)
+            possible_choice.remove(choice)
+
+            if tie_break['resolve_order'] :
+                self.info.play_order_tie_break = tie_break
+                self.info.state = tie_break['resolve_order'][0] + '.' + GameState.TIE_BREAKING \
+                                + '.' + GameState.ALL + '.' + GameState.TOKEN_BIDDING
+                if len(possible_choice) == 1 :
+                    response['queue_action'] = { 
+                        'action': Action.CHOOSE, 
+                        'choice': possible_choice[0], 
+                        '_player': tie_break['resolve_order'][0],
+                        }
             else:
-                return super(TokenBiddingState, self).action(a, params)
+                response['queue_action'] = { 'action': Action.DETERMINE_ORDER }
+                self.info.state = GameState.ALL + '.' + GameState.TOKEN_BIDDING
 
-            bidding_complete = True
-            for key in self.info.houses:
-                hinfo = self.info.houses[ key ]
-                if hinfo.turn_logs[ self.info.turn - 1 ].tokens == None:
-                    bidding_complete = False
-                    break
+            return response
+        else:
+            return super(TieBreakingState, self).action(a, params)
 
-            if bidding_complete == True:
-                return { 'queue_action': { 'action': Action.DETERMINE_ORDER } }
-            return {}
-        else :
-            if a == Action.CHOOSE:
-                if user_id != self.actor :
-                    raise GameState.InvalidAction( "Not user '" + user_id + "' turn")
-                if 'choice' not in params.keys() :
-                    raise Action.InvalidParameter(Action.CHOOSE + " requires 'choice' parameter.")
+class DrawCardsState(GameState):
+    def action(self, a, user_id=None, params={}):
+        return super(DrawCardsState, self).action(a, params)
 
-                choice = int(params['choice'])
-                tie_break = self.info.play_order_tie_break
-                bid = str(self.info.getTurnLog( user_id ).tokens)
-                response = {}
-
-                possible_choice = range(1, len(tie_break['ties'][bid]) + 1)
-                for k in tie_break['ties'][bid]:
-                    if k in tie_break['order_choice'] :
-                        possible_choice.remove(tie_break['order_choice'][k])
-
-                if choice not in possible_choice :
-                    raise Action.InvalidParameter("invalid 'choice' value" + str(choice))
-
-                tie_break['order_choice'][user_id] = choice
-                tie_break['resolve_order'].remove(user_id)
-                possible_choice.remove(choice)
-
-                if tie_break['resolve_order'] :
-                    self.info.play_order_tie_break = tie_break
-                    self.info.state = tie_break['resolve_order'][0] + '.' + GameState.TOKEN_BIDDING
-                    if len(possible_choice) == 1 :
-                        response['queue_action'] = { 
-                            'action': Action.CHOOSE, 
-                            'choice': possible_choice[0], 
-                            '_player': tie_break['resolve_order'][0],
-                            }
-                else:
-                    p_list = list(self.info.players_map.keys())
-                    p_list.sort(cmp=cmp_token_bid_after_tie_break(self.info))
-                    for p in p_list:
-                        self.info.append_play_order( p )
-                    del self.info.play_order_tie_break
-                    # TODO state transition
-                    pass
-
-                return response
-            else:
-                return super(TokenBiddingState, self).action(a, params)
