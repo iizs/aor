@@ -283,6 +283,22 @@ class GameInfo(object):
                     return user_id
         return None
 
+    def get_next_buy_card_player(self, player=None):
+        if player == None :
+            # find first player who can use renaissance
+            from_idx = 0
+        else :
+            # find next player who can use renaissance
+            from_idx = self.play_order.index( player ) + 1
+
+        for i in range(from_idx, 6):
+            user_id = self.play_order[i]
+            if user_id != None :
+                h = self.getHouseInfo(user_id)
+                if 'P' in h.advances.keys() or 'V' in h.advances.keys() :
+                    return user_id
+        return None
+
     def get_next_player(self, player=None):
         if player == None:
             # find first player
@@ -434,6 +450,7 @@ class GameState(object):
     APPLY_RENAISSANCE       =   'apply_renaissance'
     APPLY_WATERMILL         =   'apply_watermill'
     REMOVE_SURPLUS_SHORTAGE =   'remove_shortage_surplus'
+    PURCHASE                =   'purchase'
 
     STATE_MAPS = {
         INITIALIZE              : 'InitState',
@@ -447,6 +464,7 @@ class GameState(object):
         APPLY_RENAISSANCE       : 'ApplyRenaissanceState',
         APPLY_WATERMILL         : 'ApplyWatermillState',
         REMOVE_SURPLUS_SHORTAGE : 'RemoveSurplusShortageState',
+        PURCHASE                : 'PurchaseState',
     }
 
     def __init__(self, info, actor='all', depends_on=None):
@@ -812,14 +830,14 @@ class DrawCardsState(GameState):
         
             next_renaissance_player = self.info.get_next_renaissance_player() 
             if next_renaissance_player != None :
-                next_state += next_renaissance_player + '.' + GameState.APPLY_RENAISSANCE
+                next_state += next_renaissance_player + '.' + GameState.APPLY_RENAISSANCE + '.'
 
             if self.info.shortage or self.info.surplus : 
-                next_state += self.info.get_next_player() + '.' + GameState.REMOVE_SURPLUS_SHORTAGE
+                next_state += self.info.get_next_player() + '.' + GameState.REMOVE_SURPLUS_SHORTAGE + '.'
 
             watermill_player = self.info.get_last_moving_watermill_player()
             if watermill_player != None:
-                next_state += watermill_player + '.' + GameState.APPLY_WATERMILL
+                next_state += watermill_player + '.' + GameState.APPLY_WATERMILL + '.'
 
             next_state += GameState.AUTO + '.' + GameState.DRAW_CARD
 
@@ -876,10 +894,50 @@ class ApplyWatermillState(GameState):
         return super(ApplyWatermillState, self).action(a, params)
 
 class BuyCardsState(GameState):
+    ''' buy card w/ [V] or discard card w/ [P] '''
     def action(self, a, user_id=None, params={}):
+        if a == Action.PRE_PHASE :
+            response = {}
+
+            buy_card_player = self.info.get_next_buy_card_player()
+            if buy_card_player == None :
+                response['queue_action'] = { 'action': Action.POST_PHASE }
+            else :
+                next_state = buy_card_player + '.' + GameState.BUY_CARD
+
+                if self.info.get_next_buy_card_player( buy_card_player ) != None :
+                    # 두 명 이상이 행동을 할 수 있으므로, renaissance 사용 확인이 필요하다.
+                    next_renaissance_player = self.info.get_next_renaissance_player() 
+                    if next_renaissance_player != None :
+                        next_state = next_renaissance_player + '.' + GameState.APPLY_RENAISSANCE + '.' + next_state
+                self.info.state = next_state
+
+            return response
+        elif a == Action.POST_PHASE :
+            self.info.state = GameState.ALL + '.' + GameState.PLAY_CARD
+            return { 'queue_action' :  { 'action': Action.PRE_PHASE } }
         return super(BuyCardsState, self).action(a, params)
 
 class PlayCardsState(GameState):
     def action(self, a, user_id=None, params={}):
+        if a == Action.PRE_PHASE :
+            response = {}
+            next_state = ''
+
+            next_renaissance_player = self.info.get_next_renaissance_player() 
+            if next_renaissance_player != None :
+                next_state += next_renaissance_player + '.' + GameState.APPLY_RENAISSANCE + '.'
+
+            next_state += self.info.get_next_player() + '.' + GameState.PLAY_CARD
+
+            self.info.state = next_state
+
+            return response
+        elif a == Action.POST_PHASE :
+            self.info.state = GameState.ALL + '.' + GameState.PURCHASE
+            return { 'queue_action' :  { 'action': Action.PRE_PHASE } }
         return super(PlayCardsState, self).action(a, params)
 
+class PurchaseState(GameState):
+    def action(self, a, user_id=None, params={}):
+        return super(PurchaseState, self).action(a, params)
