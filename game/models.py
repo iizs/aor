@@ -217,6 +217,7 @@ class GameInfo(object):
         self.card_log['epoch_2'] = {}
         self.card_log['epoch_3'] = {}
         self.at_war = []
+        self.renaissance_usage = {}
 
         if game != None: 
             if isinstance(game, Game) != True:
@@ -252,13 +253,55 @@ class GameInfo(object):
     def append_play_order(self, player):
         if ( self.num_players == 3 and len(self.play_order) in (0, 2, 4) ) \
             or ( self.num_players == 4 and len(self.play_order) in (1, 3) ) :
-            self.player_order.append(None)
+            self.play_order.append(None)
 
         self.play_order.append(player)
         self.getTurnLog(player).play_order = len(self.play_order)
 
         if self.num_players == 5 and len(self.play_order) == 5 :
             self.play_order.append(None)
+
+    def reset_renaissance_usage(self):
+        for key in self.renaissance_usage:
+            self.renaissance_usage[key] = False
+
+    def get_next_renaissance_player(self, player=None):
+        if player == None :
+            # find first player who can use renaissance
+            from_idx = 0
+        else :
+            # find next player who can use renaissance
+            from_idx = self.play_order.index( player ) + 1
+
+        for i in range(from_idx, 6):
+            user_id = self.play_order[i]
+            if user_id != None \
+                and user_id in self.renaissance_usage.keys() \
+                and self.renaissance_usage[ user_id ] == False :
+                    return user_id
+        return None
+
+    def get_next_player(self, player=None):
+        if player == None:
+            # find first player
+            from_idx = 0
+        else :
+            # find next player
+            from_idx = self.play_order.index( player ) + 1
+
+        for i in range(from_idx, 6):
+            user_id = self.play_order[i]
+            if user_id != None :
+                return user_id
+        return None
+
+    def get_last_moving_watermill_player(self):
+        for i in range(5, -1, -1):
+            if self.play_order[i] != None:
+                h = self.getHouseInfo(self.play_order[i])
+                if 'K' in h.advances.keys() :
+                    return self.play_order[i]
+        return None
 
     def shuffle_cards(self, method, rand_dict):
         cards = []
@@ -360,20 +403,30 @@ class GameState(object):
     ALL             =   'all'
     AUTO            =   'auto'
 
-    INITIALIZE      =   'init'
-    HOUSE_BIDDING   =   'housebidding'
-    CHOOSE_CAPITAL  =   'choose_capital'
-    TOKEN_BIDDING   =   'token_bidding'
-    TIE_BREAKING    =   'tie_breaking'
-    DRAW_CARD       =   'draw_card'
+    INITIALIZE              =   'init'
+    HOUSE_BIDDING           =   'housebidding'
+    CHOOSE_CAPITAL          =   'choose_capital'
+    TOKEN_BIDDING           =   'token_bidding'
+    TIE_BREAKING            =   'tie_breaking'
+    DRAW_CARD               =   'draw_card'
+    BUY_CARD                =   'buy_card'
+    PLAY_CARD               =   'play_card'
+    APPLY_RENAISSANCE       =   'apply_renaissance'
+    APPLY_WATERMILL         =   'apply_watermill'
+    REMOVE_SURPLUS_SHORTAGE =   'remove_shortage_surplus'
 
     STATE_MAPS = {
-        INITIALIZE      : 'InitState',
-        HOUSE_BIDDING   : 'HouseBiddingState',
-        CHOOSE_CAPITAL  : 'ChooseCapitalState',
-        TOKEN_BIDDING   : 'TokenBiddingState',
-        TIE_BREAKING    : 'TieBreakingState',
-        DRAW_CARD       : 'DrawCardsState',
+        INITIALIZE              : 'InitState',
+        HOUSE_BIDDING           : 'HouseBiddingState',
+        CHOOSE_CAPITAL          : 'ChooseCapitalState',
+        TOKEN_BIDDING           : 'TokenBiddingState',
+        TIE_BREAKING            : 'TieBreakingState',
+        DRAW_CARD               : 'DrawCardsState',
+        BUY_CARD                : 'BuyCardsState',
+        PLAY_CARD               : 'PlayCardsState',
+        APPLY_RENAISSANCE       : 'ApplyRenaissanceState',
+        APPLY_WATERMILL         : 'ApplyWatermillState',
+        REMOVE_SURPLUS_SHORTAGE : 'RemoveSurplusShortageState',
     }
 
     def __init__(self, info, actor='all', depends_on=None):
@@ -729,5 +782,64 @@ class TieBreakingState(GameState):
 
 class DrawCardsState(GameState):
     def action(self, a, user_id=None, params={}):
+        if a == Action.PRE_PHASE :
+            if self.info.turn == 1 :
+                rand_dict = params['random'] if 'random' in params.keys() else {}
+                self.info.shuffle_cards(GameInfo.SHUFFLE_TURN1, rand_dict)
+            elif self.info.turn == 2 and self.info.num_players in (5, 6) :
+                rand_dict = params['random'] if 'random' in params.keys() else {}
+                self.info.shuffle_cards(GameInfo.SHUFFLE_TURN2, rand_dict)
+            
+            self.info.reset_renaissance_usage()
+
+            response = {}
+            next_state = ''
+        
+            next_renaissance_player = self.info.get_next_renaissance_player() 
+            if next_renaissance_player != None :
+                next_state += next_renaissance_player + '.' + GameState.APPLY_RENAISSANCE
+
+            if self.info.shortage or self.info.surplus : 
+                next_state += self.info.get_next_player() + '.' + GameState.REMOVE_SURPLUS_SHORTAGE
+
+            watermill_player = self.info.get_last_moving_watermill_player()
+            if watermill_player != None:
+                next_state += watermill_player + '.' + GameState.APPLY_WATERMILL
+
+            next_state += GameState.AUTO + '.' + GameState.DRAW_CARD
+
+            state_part = next_state.split('.', 3)
+            actor = state_part[0]
+            name = state_part[1]
+            remains = state_part[2] if len(state_part) == 3 else None
+
+            if actor == GameState.AUTO and name == GameState.DRAW_CARD:
+                response['queue_action'] = { 'action': Action.DEAL_CARDS }
+            self.info.state = next_state
+
+            return response
         return super(DrawCardsState, self).action(a, params)
+
+class ApplyRenaissanceState(GameState):
+    ''' play order change w/ [Q] Renaissance advance '''
+    def action(self, a, user_id=None, params={}):
+        return super(ApplyRenaissanceState, self).action(a, params)
+
+class RemoveSurplusShortageState(GameState):
+    ''' removal shortage/surplus by 1st player '''
+    def action(self, a, user_id=None, params={}):
+        return super(RemoveSurplusShortageState, self).action(a, params)
+
+class ApplyWatermillState(GameState):
+    ''' adjust shortage/surplus of Grain, Cloth, Wine or Metal w/ [K] Wind/WaterMill advance '''
+    def action(self, a, user_id=None, params={}):
+        return super(ApplyWatermillState, self).action(a, params)
+
+class BuyCardsState(GameState):
+    def action(self, a, user_id=None, params={}):
+        return super(BuyCardsState, self).action(a, params)
+
+class PlayCardsState(GameState):
+    def action(self, a, user_id=None, params={}):
+        return super(PlayCardsState, self).action(a, params)
 
