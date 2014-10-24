@@ -303,7 +303,8 @@ class GameInfo(object):
                     return self.play_order[i]
         return None
 
-    def shuffle_cards(self, method, rand_dict):
+    def shuffle_cards(self, method, params):
+        rand_dict = params['random'] if 'random' in params.keys() else {}
         cards = []
         edition = Edition.objects.filter(name__exact=self.edition)
 
@@ -339,9 +340,9 @@ class GameInfo(object):
             random.shuffle(cards)
 
         self.draw_stack = cards
-        if method == GameInfo.SHUFFLE_TURN2 :
-            return
-        self.discard_stack = []
+        if method != GameInfo.SHUFFLE_TURN2 :
+            self.discard_stack = []
+        return list(self.draw_stack)
 
 class GameInfoEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -468,10 +469,9 @@ class InitState(GameState):
         if a == Action.DEAL_CARDS :
             # 초기화 상태이니, 무조건 카드를 섞고, 배분한다.
             # log replay를 하는 경우에는 과거에 섞은것과 동일하게 섞는다.
-            rand_dict = params['random'] if 'random' in params.keys() else {}
-            self.info.shuffle_cards(GameInfo.SHUFFLE_INIT, rand_dict)
+            rand_dict = {}
+            rand_dict['draw_stack'] = self.info.shuffle_cards(GameInfo.SHUFFLE_INIT, params)
 
-            rand_dict['draw_stack'] = list(self.info.draw_stack)
             for h in self.info.house_bidding_log:
                 h.draw_cards.append(self.info.draw_stack.pop())
                 h.draw_cards.append(self.info.draw_stack.pop())
@@ -789,13 +789,9 @@ class DrawCardsState(GameState):
             response = {}
             rand_dict = {}
             if self.info.turn == 1 :
-                rand_dict = params['random'] if 'random' in params.keys() else {}
-                self.info.shuffle_cards(GameInfo.SHUFFLE_TURN1, rand_dict)
-                rand_dict['draw_stack'] = list(self.info.draw_stack)
+                rand_dict['draw_stack'] = self.info.shuffle_cards(GameInfo.SHUFFLE_TURN1, params)
             elif self.info.turn == 2 and self.info.num_players in (5, 6) :
-                rand_dict = params['random'] if 'random' in params.keys() else {}
-                self.info.shuffle_cards(GameInfo.SHUFFLE_TURN2, rand_dict)
-                rand_dict['draw_stack'] = list(self.info.draw_stack)
+                rand_dict['draw_stack'] = self.info.shuffle_cards(GameInfo.SHUFFLE_TURN2, params)
            
             response['random'] = rand_dict
             self.info.reset_renaissance_usage()
