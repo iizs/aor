@@ -10,7 +10,7 @@ from player.models import Player
 
 @task()
 def process_action(game_id, lsn, replay=False):
-    logger = get_task_logger(__name__)
+    logger = get_task_logger(game_id)
     action_queue = []
 
     with transaction.atomic():
@@ -19,9 +19,9 @@ def process_action(game_id, lsn, replay=False):
         info = json.loads(g.current_info, cls=GameInfoDecoder)
         for l in logs:
             try:
-                logger.info('Applying ' + str(l))
                 action_dict = l.get_log_as_dict()
                 state = GameState.getInstance(info)
+                logger.info('Applying ' + str(l) + ': ' + type(state).__name__ + ', ' + l.log)
                 user_id = l.player.user_id if l.player != None else None
                 result = state.action(action_dict['action'], user_id=user_id, params=action_dict)
 
