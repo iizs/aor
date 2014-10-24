@@ -190,6 +190,7 @@ class GameInfo(object):
     SHUFFLE_INIT = 0
     SHUFFLE_TURN1 = 1
     SHUFFLE_TURN2 = 2
+    SHUFFLE_NEXT_EPOCH = 3
 
     def __init__(self, game=None):
         self.edition = 'european' #None
@@ -205,6 +206,7 @@ class GameInfo(object):
 
         self.epoch = 1
         self.turn = 1
+        self.final_turn = False
         self.state = GameState.AUTO + '.' + GameState.INITIALIZE
         self.discard_stack = []
         self.draw_stack = []
@@ -308,6 +310,13 @@ class GameInfo(object):
         cards = []
         edition = Edition.objects.filter(name__exact=self.edition)
 
+        if method == GameInfo.SHUFFLE_NEXT_EPOCH :
+            self.epoch += 1
+
+        if self.epoch == 4 :
+            self.final_turn = True
+            return []
+
         if 'draw_stack' in rand_dict.keys():
             cards = rand_dict['draw_stack']
         else :
@@ -335,8 +344,12 @@ class GameInfo(object):
                                 .filter(shuffle_later__exact=True)
                     for c in hcards:
                         cards.append(c.short_name)
-            else:
-                pass
+            elif method == GameInfo.SHUFFLE_NEXT_EPOCH :
+                hcards = HistoryCard.objects                    \
+                            .filter(edition__exact=edition)     \
+                            .filter(epoch__exact=self.epoch)
+                for c in hcards:
+                    cards.append(c.short_name)
             random.shuffle(cards)
 
         self.draw_stack = cards
@@ -817,11 +830,34 @@ class DrawCardsState(GameState):
             self.info.state = next_state
 
             return response
+
         elif a == Action.POST_PHASE :
             self.info.state = GameState.AUTO + '.' + GameState.BUY_CARD
             return { 'queue_action' :  { 'action': Action.PRE_PHASE } }
+
         elif a == Action.DEAL_CARDS :
-            return { 'queue_action' :  { 'action': Action.POST_PHASE } }
+            rand_dict = {}
+            response = {}
+
+            for key in self.info.play_order:
+                if key == None: 
+                    continue
+                h = self.info.getHouseInfo(key)
+
+                if not self.info.draw_stack :
+                    rand_dict['draw_stack'] = self.info.shuffle_cards(GameInfo.SHUFFLE_NEXT_EPOCH, params)
+                    if self.info.final_turn == True :
+                        del rand_dict['draw_stack']
+                        break
+
+                h.hands.append(self.info.draw_stack.pop())
+
+            if rand_dict :
+                response['random'] = rand_dict
+
+            response['queue_action'] = { 'action': Action.POST_PHASE }
+
+            return response
         return super(DrawCardsState, self).action(a, params)
 
 class ApplyRenaissanceState(GameState):
