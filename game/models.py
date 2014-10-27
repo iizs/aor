@@ -280,7 +280,12 @@ class GameInfo(object):
             if user_id != None \
                 and user_id in self.renaissance_usage.keys() \
                 and self.renaissance_usage[ user_id ] == False :
-                    return user_id
+                    # Renaissance 를 연구하고, 아직 사용하지 않은 player
+                    p_player = self.get_prev_player(user_id)
+                    n_player = self.get_next_player(user_id)
+                    if ( p_player != None and p_player not in self.renaissance_usage.keys() ) \
+                        or ( n_player != None and n_player not in self.renaissance_usage.keys() ) :
+                        return user_id
         return None
 
     def get_next_buy_card_player(self, player=None):
@@ -297,6 +302,20 @@ class GameInfo(object):
                 h = self.getHouseInfo(user_id)
                 if 'P' in h.advances.keys() or 'V' in h.advances.keys() :
                     return user_id
+        return None
+
+    def get_prev_player(self, player=None):
+        if player == None:
+            # find last player
+            from_idx = 5
+        else :
+            # find prev player
+            from_idx = self.play_order.index( player ) - 1
+
+        for i in range(from_idx, -1, -1):
+            user_id = self.play_order[i]
+            if user_id != None :
+                return user_id
         return None
 
     def get_next_player(self, player=None):
