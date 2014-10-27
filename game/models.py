@@ -218,7 +218,11 @@ class GameInfo(object):
         self.card_log['epoch_1'] = {}
         self.card_log['epoch_2'] = {}
         self.card_log['epoch_3'] = {}
-        self.at_war = []
+        self.war = {
+            'attacker' : None,
+            'defender' : None,
+            'last_rolled_state' : None,
+        }
         self.renaissance_usage = {}
 
         if game != None: 
@@ -441,6 +445,8 @@ class Action(object):
     BID             =   'bid'
     CHOOSE          =   'choose'
     DETERMINE_ORDER =   'determine_order'
+    PLAY_CARD       =   'play_card'
+    PASS            =   'pass'
 
     class InvalidParameter(Exception):
         def __init__(self, message):
@@ -964,6 +970,10 @@ class PlayCardsState(GameState):
         elif a == Action.POST_PHASE :
             self.info.state = GameState.ALL + '.' + GameState.PURCHASE
             return { 'queue_action' :  { 'action': Action.PRE_PHASE } }
+        elif a == Action.PASS:
+            pass
+        elif a == Action.PLAY_CARD:
+            pass
         return super(PlayCardsState, self).action(a, params)
 
 class PurchaseState(GameState):
