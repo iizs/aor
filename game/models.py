@@ -7,7 +7,7 @@ import json
 import random
 
 from player.models import Player
-from rule.models import Edition, HistoryCard, EventCard, LeaderCard, CommodityCard
+from rule.models import Edition, HistoryCard, EventCard, LeaderCard, CommodityCard, Province
 
 class GetOrNoneManager(models.Manager):
     """Adds get_or_none method to objects
@@ -526,6 +526,14 @@ class InitState(GameState):
                 h.draw_cards.append(self.info.draw_stack.pop())
                 h.draw_cards.append(self.info.draw_stack.pop())
                 h.draw_cards.append(self.info.draw_stack.pop())
+
+            edition = Edition.objects.filter(name__exact=self.info.edition)
+            all_provinces = Province.objects                    \
+                            .filter(edition__exact=edition) 
+            for p in all_provinces:
+                self.info.provinces[p.short_name] = {
+                }
+
             self.info.state = GameState.ALL + '.' + GameState.HOUSE_BIDDING
             return { 'random': rand_dict }
         else:
@@ -674,6 +682,7 @@ class ChooseCapitalState(GameState):
             )
             self.info.houses[choice] = h
             self.info.players_map[user_id] = choice
+            self.info.provinces[choice]['color-marker'] = choice
 
             # 마지막 플레이어만 남았다면 자동으로 남은 수도를 선택하도록 함
             available.remove(choice)
