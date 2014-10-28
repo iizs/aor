@@ -31,15 +31,20 @@ def process_action(game_id, lsn, replay=False):
                     action_dict['random'] = result['random']
                 if 'queue_action' in result.keys() :
                     action_queue.append(result['queue_action'])
+                if 'msg' in result.keys():
+                    for m in result['msg']:
+                        l.add_info(m['user_id'], m['msg'])
 
                 l.set_log(action_dict)
                 l.status = GameLog.CONFIRMED
             except (GameState.NotSupportedAction, GameState.InvalidAction, Action.InvalidParameter) as e:
                 l.status = GameLog.FAILED
                 logger.error(str(l) + " :" + type(e).__name__ + ": " + e.message)
+                l.add_warning(user_id, e.message)
             except (Action.WarNotResolved) as e:
                 l.status = GameLog.FAILED
                 logger.error(str(l) + " :" + type(e).__name__ + ": " + e.message)
+                l.add_warning(user_id, e.message)
                 for a in e.actions:
                     action_queue.append(a)
             g.applied_lsn = l.lsn

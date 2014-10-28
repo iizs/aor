@@ -119,6 +119,34 @@ class GameLog(models.Model):
     def get_log_as_dict(self):
         return json.loads(self.log)
 
+    def add_warning(self, user_id, msg):
+        self._add_msg( user_id, msg={ 'type':'warning', 'msg':msg } )
+
+    def add_info(self, user_id, msg):
+        self._add_msg( user_id, msg={ 'type':'info', 'msg':msg } )
+
+    def _add_msg(self, user_id, msg):
+        if user_id == None or user_id == 'all' or user_id == 'auto' :
+            # send to all
+            user_list = []
+            for p in self.game.players:
+                user_list.append(p.user_id)
+        else :
+            user_list = [ user_id ]
+
+        if self.msg == None:
+            m = {}
+        else :
+            m = json.loads(self.msg)
+        
+        for u in user_list:
+            if u not in m.keys():
+                m[u] = []
+
+            m[u].append( msg )
+
+        self.msg = json.dumps(m)
+
     class Meta:
         unique_together = (
             ("game", "lsn"),
@@ -543,20 +571,29 @@ class InitState(GameState):
             rand_dict = {}
             rand_dict['draw_stack'] = self.info.shuffle_cards(GameInfo.SHUFFLE_INIT, params)
 
+            response = {}
+            response['msg'] = []
+
             for h in self.info.house_bidding_log:
                 h.draw_cards.append(self.info.draw_stack.pop())
                 h.draw_cards.append(self.info.draw_stack.pop())
                 h.draw_cards.append(self.info.draw_stack.pop())
+                response['msg'].append( {
+                        'user_id': h.user_id, 
+                        'msg': "You drew " + str(h.draw_cards), 
+                    }
+                )
 
             edition = Edition.objects.filter(name__exact=self.info.edition)
             all_provinces = Province.objects                    \
                             .filter(edition__exact=edition) 
             for p in all_provinces:
-                self.info.provinces[p.short_name] = {
-                }
+                self.info.provinces[p.short_name] = { }
 
             self.info.state = GameState.ALL + '.' + GameState.HOUSE_BIDDING
-            return { 'random': rand_dict }
+            response['random'] = rand_dict
+
+            return response
         else:
             return super(InitState, self).action(a, params)
 
