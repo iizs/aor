@@ -210,7 +210,6 @@ class GameInfo(object):
         self.state = GameState.AUTO + '.' + GameState.INITIALIZE
         self.discard_stack = []
         self.draw_stack = []
-        self.leader_stack = []
         self.shortage = []
         self.surplus = []
         self.provinces = {}
@@ -222,6 +221,11 @@ class GameInfo(object):
             'attacker' : None,
             'defender' : None,
             'last_rolled_state' : None,
+        }
+        self.leader = {
+            'stack' : [],
+            'player' : {},
+            'user': {},
         }
         self.renaissance_usage = {}
 
