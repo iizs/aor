@@ -451,10 +451,18 @@ class Action(object):
     DETERMINE_ORDER =   'determine_order'
     PLAY_CARD       =   'play_card'
     PASS            =   'pass'
+    RESOVE_WAR      =   'resolve_war'
 
     class InvalidParameter(Exception):
         def __init__(self, message):
             self.message = message
+        def __unicode__(self):
+            return repr(self.message)
+
+    class WarNotResolved(Exception):
+        def __init__(self, message, actions=[]):
+            self.message = message
+            self.actions = actions
         def __unicode__(self):
             return repr(self.message)
 
@@ -476,6 +484,7 @@ class GameState(object):
     DRAW_CARD               =   'draw_card'
     BUY_CARD                =   'buy_card'
     PLAY_CARD               =   'play_card'
+    POST_WAR                =   'post_war'
     APPLY_RENAISSANCE       =   'apply_renaissance'
     APPLY_WATERMILL         =   'apply_watermill'
     REMOVE_SURPLUS_SHORTAGE =   'remove_shortage_surplus'
@@ -490,6 +499,7 @@ class GameState(object):
         DRAW_CARD               : 'DrawCardsState',
         BUY_CARD                : 'BuyCardsState',
         PLAY_CARD               : 'PlayCardsState',
+        POST_WAR                : 'PostWarState',
         APPLY_RENAISSANCE       : 'ApplyRenaissanceState',
         APPLY_WATERMILL         : 'ApplyWatermillState',
         REMOVE_SURPLUS_SHORTAGE : 'RemoveSurplusShortageState',
@@ -975,10 +985,39 @@ class PlayCardsState(GameState):
             self.info.state = GameState.ALL + '.' + GameState.PURCHASE
             return { 'queue_action' :  { 'action': Action.PRE_PHASE } }
         elif a == Action.PASS:
-            pass
+            if user_id != self.actor :
+                raise GameState.InvalidAction( "Not user '" + user_id + "' turn")
+            if self.war_resolved() == False:
+                raise Action.WarNotResolved(
+                        "'War!' must be resolved before pass.", 
+                        action = {
+                            'action': Action.RESOLVE_WAR,
+                            '_player': self.actor,
+                        }
+                )
+
+            response = {}
+            next_player = self.info.get_next_player(self.actor)
+            if next_player == None:
+                response['queue_action'] = { 'action': Action.POST_PHASE }
+            else :
+                self.info.state = next_player + '.' + GameState.PLAY_CARD
+            return response
         elif a == Action.PLAY_CARD:
             pass
+        elif a == Action.RESOLVE_WAR:
+            pass
         return super(PlayCardsState, self).action(a, params)
+
+    def war_resolved(self):
+        last_state = self.info.war['last_rolled_state']
+        if last_state == None or last_state == self.info.state :
+            return True
+        return False
+
+class PostWarState(GameState):
+    def action(self, a, user_id=None, params={}):
+        return super(PostWarState, self).action(a, params)
 
 class PurchaseState(GameState):
     def action(self, a, user_id=None, params={}):

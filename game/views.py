@@ -225,6 +225,7 @@ def _get_user_id_from_action(request):
     body = json.loads(request.body)
     return body['user_id'] if 'user_id' in body else None
 
+# TODO PRE_PHASE, POST_PHASE 는 이 view를 통해 보낼 수 없도록 한다.
 @csrf_exempt
 @requires_access_token(func_get_user_id=_get_user_id_from_action)
 def action(request):

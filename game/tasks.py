@@ -18,11 +18,12 @@ def process_action(game_id, lsn, replay=False):
         logs = GameLog.objects.filter(game=g, lsn__gt=g.applied_lsn, lsn__lte=lsn, status=GameLog.ACCEPTED)
         info = json.loads(g.current_info, cls=GameInfoDecoder)
         for l in logs:
+            action_dict = l.get_log_as_dict()
+            user_id = l.player.user_id if l.player != None else None
+
             try:
-                action_dict = l.get_log_as_dict()
                 state = GameState.getInstance(info)
                 logger.info('Applying ' + str(l) + ': ' + type(state).__name__ + ', ' + l.log)
-                user_id = l.player.user_id if l.player != None else None
                 result = state.action(action_dict['action'], user_id=user_id, params=action_dict)
 
                 info = state.info
@@ -36,6 +37,11 @@ def process_action(game_id, lsn, replay=False):
             except (GameState.NotSupportedAction, GameState.InvalidAction, Action.InvalidParameter) as e:
                 l.status = GameLog.FAILED
                 logger.error(str(l) + " :" + type(e).__name__ + ": " + e.message)
+            except (Action.WarNotResolved) as e:
+                l.status = GameLog.FAILED
+                logger.error(str(l) + " :" + type(e).__name__ + ": " + e.message)
+                for a in e.actions:
+                    action_queue.append(a)
             g.applied_lsn = l.lsn
             l.save()
         g.set_current_info(info)
