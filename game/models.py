@@ -107,6 +107,7 @@ class GameLog(models.Model):
     timestamp = models.DateTimeField('timestamp', auto_now_add=True)
     status = models.CharField(max_length=1, choices=STATUS, default=ACCEPTED)
     log = models.TextField()
+    msg = models.TextField(null=True, blank=True)
 
     def __unicode__(self):
         return str(self.game) + ': ' + str(self.lsn)
