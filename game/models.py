@@ -7,7 +7,7 @@ import json
 import random
 
 from player.models import Player
-from rule.models import Edition, HistoryCard, EventCard, LeaderCard, CommodityCard, Province
+from rule.models import Edition, HistoryCard, EventCard, LeaderCard, CommodityCard, Province, Commodity
 
 class GetOrNoneManager(models.Manager):
     """Adds get_or_none method to objects
@@ -206,6 +206,7 @@ class HouseInfo(object):
         self.ship_type = None
         self.ship_capacity = 0
         self.turn_logs = []
+        self.chaos_out = False
 
 class GameInfo(object):
     GEN = 'Gen'
@@ -215,6 +216,11 @@ class GameInfo(object):
     LON = 'Lon'
     HAM = 'Ham'
     HOUSES = ( GEN, VEN, BAR, PAR, LON, HAM )
+
+    MISERY = [  0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
+                125, 150, 175, 200, 
+                250, 300, 350, 400, 450, 500, 
+                600, 700, 800, 900, 1000, "Chaos" ]
 
     SHUFFLE_INIT = 0
     SHUFFLE_TURN1 = 1
@@ -319,8 +325,8 @@ class GameInfo(object):
                 and user_id in self.renaissance_usage.keys() \
                 and self.renaissance_usage[ user_id ] == False :
                     # Renaissance 를 연구하고, 아직 사용하지 않은 player
-                    p_player = self.get_prev_player(user_id)
-                    n_player = self.get_next_player(user_id)
+                    p_player = self.get_prev_player(user_id, include_chaos=True)
+                    n_player = self.get_next_player(user_id, include_chaos=True)
                     if ( p_player != None and p_player not in self.renaissance_usage.keys() ) \
                         or ( n_player != None and n_player not in self.renaissance_usage.keys() ) :
                         return user_id
@@ -342,7 +348,7 @@ class GameInfo(object):
                     return user_id
         return None
 
-    def get_prev_player(self, player=None):
+    def get_prev_player(self, player=None, include_chaos=False):
         if player == None:
             # find last player
             from_idx = 5
@@ -352,11 +358,11 @@ class GameInfo(object):
 
         for i in range(from_idx, -1, -1):
             user_id = self.play_order[i]
-            if user_id != None :
+            if user_id != None and ( include_chaos or self.getHouseInfo(user_id).chaos_out == False ) :
                 return user_id
         return None
 
-    def get_next_player(self, player=None):
+    def get_next_player(self, player=None, include_chaos=False):
         if player == None:
             # find first player
             from_idx = 0
@@ -366,7 +372,7 @@ class GameInfo(object):
 
         for i in range(from_idx, 6):
             user_id = self.play_order[i]
-            if user_id != None :
+            if user_id != None and ( include_chaos or self.getHouseInfo(user_id).chaos_out == False ) :
                 return user_id
         return None
 
@@ -1043,8 +1049,6 @@ class PlayCardsState(GameState):
             h = self.info.getHouseInfo(user_id)
             if card not in h.hands:
                 raise Action.InvalidParameter("You don't have '" + card + "'")
-            h.hands.remove(card)
-            self.info.discard_stack.append(card)
 
             if card[0] == 'C':
                 response = self.play_commodity_card(card, params)
@@ -1053,6 +1057,8 @@ class PlayCardsState(GameState):
             else :
                 response = self.play_event_card(card, params)
 
+            h.hands.remove(card)
+            self.info.discard_stack.append(card)
 
             return response
 
@@ -1080,7 +1086,7 @@ class PlayCardsState(GameState):
                     commodity = commodity_card.commodities.get(short_name=choice)
                 else:
                     commodity = commodity_card.commodities.get(full_name=choice)
-            except (DoesNotExist) as e:
+            except (Commodity.DoesNotExist) as e:
                 raise Action.InvalidParameter("'choice' parameter must be either '" + str(commodity_card) + "'")
         else :
             commodity = commodity_card.commodities.all()[0]
@@ -1100,7 +1106,7 @@ class PlayCardsState(GameState):
             h.turn_logs[ self.info.turn - 1 ].card_income += income
             h.cash += income
 
-        self.info.card_log['epoch_' + str(self.info.epoch)][commodity.short_name] = self.info.turn
+        self.info.card_log['epoch_' + str(self.info.epoch)][card] = self.info.turn
         return response
 
     def play_leader_card(self, card):
