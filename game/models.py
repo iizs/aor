@@ -255,6 +255,7 @@ class GameInfo(object):
             'stack' : [],
             'player' : {},
             'user': {},
+            'play_log': {},
         }
         self.renaissance_usage = {}
 
@@ -480,7 +481,7 @@ class Action(object):
     DETERMINE_ORDER =   'determine_order'
     PLAY_CARD       =   'play_card'
     PASS            =   'pass'
-    RESOVE_WAR      =   'resolve_war'
+    RESOLVE_WAR     =   'resolve_war'
 
     class InvalidParameter(Exception):
         def __init__(self, message):
@@ -1020,13 +1021,7 @@ class PlayCardsState(GameState):
             if user_id != self.actor :
                 raise GameState.InvalidAction( "Not user '" + user_id + "' turn")
             if self.war_resolved() == False:
-                raise Action.WarNotResolved(
-                        "'War!' must be resolved before pass.", 
-                        action = {
-                            'action': Action.RESOLVE_WAR,
-                            '_player': self.actor,
-                        }
-                )
+                raise Action.WarNotResolved( "'War!' must be resolved before pass." )
 
             response = {}
             next_player = self.info.get_next_player(self.actor)
@@ -1036,7 +1031,31 @@ class PlayCardsState(GameState):
                 self.info.state = next_player + '.' + GameState.PLAY_CARD
             return response
         elif a == Action.PLAY_CARD:
-            pass
+            if 'card' not in params.keys() :
+                raise Action.InvalidParameter(Action.PLAY_CARD + " requires 'card' parameter.")
+            if user_id != self.actor :
+                raise GameState.InvalidAction( "Not user '" + user_id + "' turn")
+            if self.war_resolved() == False and card not in ('E12_arm', 'E18_gun', 'E19_bow', 'E27_sti'):
+                raise Action.WarNotResolved( "'War!' must be resolved before play other card." )
+
+            card = params['card']
+
+            h = self.info.getHouseInfo(user_id)
+            if card not in h.hands:
+                raise Action.InvalidParameter("You don't have '" + card + "'")
+            h.hands.remove(card)
+            self.info.discard_stack.append(card)
+
+            if card[0] == 'C':
+                response = self.play_commodity_card(card, params)
+            elif card[0] == 'L':
+                response = self.play_leader_card(card)
+            else :
+                response = self.play_event_card(card, params)
+
+
+            return response
+
         elif a == Action.RESOLVE_WAR:
             pass
         return super(PlayCardsState, self).action(a, params)
@@ -1046,6 +1065,51 @@ class PlayCardsState(GameState):
         if last_state == None or last_state == self.info.state :
             return True
         return False
+
+    def play_commodity_card(self, card, params):
+        response = {}
+        edition = Edition.objects.filter(name=self.info.edition)
+        commodity_card = CommodityCard.objects.get(edition=edition, short_name=card)
+        if ( len(commodity_card.commodities.all()) > 1 ) :
+            if 'choice' not in params.keys() :
+                raise Action.InvalidParameter("'" + str(commodity_card) + "' requires 'choice' parameter.")
+            choice = params['choice']
+
+            try:
+                if len(choice) == 2 :
+                    commodity = commodity_card.commodities.get(short_name=choice)
+                else:
+                    commodity = commodity_card.commodities.get(full_name=choice)
+            except (DoesNotExist) as e:
+                raise Action.InvalidParameter("'choice' parameter must be either '" + str(commodity_card) + "'")
+        else :
+            commodity = commodity_card.commodities.all()[0]
+        provinces = Province.objects.filter(edition=edition, commodities=commodity)
+
+        owners = {}
+        for p in provinces:
+            if "color-marker" in self.info.provinces[p.short_name] :
+                owner = self.info.provinces[p.short_name]["color-marker"]
+                if owner not in owners:
+                    owners[owner] = 0
+                owners[owner] += 1
+
+        for key in owners:
+            income = owners[key] * owners[key] * commodity.unit_price
+            h = self.info.houses[key]
+            h.turn_logs[ self.info.turn - 1 ].card_income += income
+            h.cash += income
+
+        self.info.card_log['epoch_' + str(self.info.epoch)][commodity.short_name] = self.info.turn
+        return response
+
+    def play_leader_card(self, card):
+        response = {}
+        return response
+
+    def play_event_card(self, card, params):
+        response = {}
+        return response
 
 class PostWarState(GameState):
     def action(self, a, user_id=None, params={}):

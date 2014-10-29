@@ -37,16 +37,13 @@ def process_action(game_id, lsn, replay=False):
 
                 l.set_log(action_dict)
                 l.status = GameLog.CONFIRMED
-            except (GameState.NotSupportedAction, GameState.InvalidAction, Action.InvalidParameter) as e:
+            except (GameState.NotSupportedAction, 
+                    GameState.InvalidAction, 
+                    Action.InvalidParameter, 
+                    Action.WarNotResolved) as e:
                 l.status = GameLog.FAILED
                 logger.error(str(l) + " :" + type(e).__name__ + ": " + e.message)
                 l.add_warning(user_id, e.message)
-            except (Action.WarNotResolved) as e:
-                l.status = GameLog.FAILED
-                logger.error(str(l) + " :" + type(e).__name__ + ": " + e.message)
-                l.add_warning(user_id, e.message)
-                for a in e.actions:
-                    action_queue.append(a)
             g.applied_lsn = l.lsn
             l.save()
         g.set_current_info(info)
