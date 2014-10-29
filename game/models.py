@@ -202,11 +202,20 @@ class HouseInfo(object):
         self.cash = cash
         self.stock_tokens = 36
         self.expansion_tokens = 0
-        self.written_cash = 0
         self.ship_type = None
         self.ship_capacity = 0
         self.turn_logs = []
         self.chaos_out = False
+
+    def prepare_new_turn(self, turn):
+        self.stock_tokens += self.expansion_tokens
+        self.expansion_tokens = 0
+        self.turn_logs.append( 
+            HouseTurnLog(
+                turn=turn,
+                cash=self.cash,
+                ) 
+            )
 
 class GameInfo(object):
     GEN = 'Gen'
@@ -264,6 +273,9 @@ class GameInfo(object):
             'play_log': {},
         }
         self.renaissance_usage = {}
+        self.enlightened_ruler = None
+        self.civil_war = None
+        self.papal_decree = None
 
         if game != None: 
             if isinstance(game, Game) != True:
@@ -285,6 +297,18 @@ class GameInfo(object):
         if turn == None:
             turn = self.turn
         return self.getHouseInfo(player).turn_logs[turn - 1]
+
+    def prepare_new_turn(self):
+        self.clear_play_order()
+
+        self.leader['stack'] = []
+        self.leader['player'] = {}
+        self.leader['user'] = {}
+
+        self.renaissance_usage = {}
+        self.enlightened_ruler = None
+        self.civil_war = None
+        self.papal_decree = None
 
     def get_house_choice_order(self, player) :
         for i in range(len(self.house_bidding_log)):
@@ -759,15 +783,9 @@ class ChooseCapitalState(GameState):
                 self.info.state = GameState.ALL + '.' + GameState.TOKEN_BIDDING
                 response['queue_action'] =  { 'action': Action.PRE_PHASE } 
                 self.info.epoch = 1
-                self.info.turn = 0
+                self.info.turn = 1
                 for key in self.info.houses:
-                    h = self.info.houses[key]
-                    h.turn_logs.append( 
-                        HouseTurnLog(
-                            turn=self.info.turn,
-                            cash=h.cash,
-                            ) 
-                        )
+                    self.info.houses[key].prepare_new_turn(self.info.turn)
 
             return response
         else:
@@ -776,7 +794,8 @@ class ChooseCapitalState(GameState):
 class TokenBiddingState(GameState):
     def action(self, a, user_id=None, params={}):
         if a == Action.PRE_PHASE :
-            self.info.turn += 1
+            # TODO turn counter 증가 및 TurnLog 추가는 Turn 종료시에 한다.
+            self.info.prepare_new_turn()
             return {}
         elif a == Action.POST_PHASE :
             for key in self.info.houses:
@@ -816,7 +835,6 @@ class TokenBiddingState(GameState):
 
             return response
         elif a == Action.DETERMINE_ORDER :
-            self.info.clear_play_order()
             p_list = list(self.info.players_map.keys())
 
             tie_break = self.info.play_order_tie_break
