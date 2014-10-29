@@ -37,6 +37,7 @@ class Commodity(models.Model):
     short_name = models.CharField(max_length=2)
     full_name = models.CharField(max_length=10)
     unit_price = models.SmallIntegerField()
+    dice_roll = models.SmallIntegerField()
 
     def __unicode__(self):
         return self.full_name

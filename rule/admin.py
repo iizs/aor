@@ -5,7 +5,7 @@ from django.db import models
 from rule.models import Edition, Commodity, Province, Water, Advance, HistoryCard, EventCard, LeaderCard, CommodityCard
 
 class CommodityAdmin(admin.ModelAdmin):
-    list_display = ('full_name', 'short_name', 'unit_price')
+    list_display = ('full_name', 'short_name', 'unit_price', 'dice_roll')
 
 class ProvinceAdmin(admin.ModelAdmin):
     list_display = (
