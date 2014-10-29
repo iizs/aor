@@ -572,17 +572,11 @@ class InitState(GameState):
             rand_dict['draw_stack'] = self.info.shuffle_cards(GameInfo.SHUFFLE_INIT, params)
 
             response = {}
-            response['msg'] = []
 
             for h in self.info.house_bidding_log:
                 h.draw_cards.append(self.info.draw_stack.pop())
                 h.draw_cards.append(self.info.draw_stack.pop())
                 h.draw_cards.append(self.info.draw_stack.pop())
-                response['msg'].append( {
-                        'user_id': h.user_id, 
-                        'msg': "You drew " + str(h.draw_cards), 
-                    }
-                )
 
             edition = Edition.objects.filter(name__exact=self.info.edition)
             all_provinces = Province.objects                    \
