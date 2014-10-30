@@ -214,8 +214,21 @@ class HouseInfo(object):
             HouseTurnLog(
                 turn=turn,
                 cash=self.cash,
-                ) 
-            )
+            ) 
+        )
+
+    def adjust_misery(self, level):
+        if level != 0 :
+            c_level = GameInfo.MISERY.index(self.misery)
+            n_level = c_level + level
+
+            if n_level < 0 : 
+                n_level = 0
+            if n_level >= len(GameInfo.MISERY): 
+                n_level = len(GameInfo.MISERY) - 1
+                self.chaos_out = True
+
+            self.misery = GameInfo.MISERY[n_level]
 
 class GameInfo(object):
     GEN = 'Gen'
@@ -275,13 +288,14 @@ class GameInfo(object):
         self.renaissance_usage = {}
         self.enlightened_ruler = None
         self.civil_war = None
-        self.papal_decree = None
+        self.papal_decree = []
         self.armor = None
         self.stirrups = None
         self.longbow = None
         self.gunpowder = None
         self.crusades = None
-        self.mongol_armies = None
+        self.mongol_armies = False
+        self.religious_strife = False
 
         if game != None: 
             if isinstance(game, Game) != True:
@@ -316,7 +330,7 @@ class GameInfo(object):
         self.renaissance_usage = {}
         self.enlightened_ruler = None
         self.civil_war = None
-        self.papal_decree = None
+        self.papal_decree = []
 
         self.armor = None
         self.stirrups = None
@@ -324,6 +338,8 @@ class GameInfo(object):
         self.gunpowder = None
 
         self.crusades = None
+        if self.epoch != 3 :
+            self.religious_strife = False
 
     def get_house_choice_order(self, player) :
         for i in range(len(self.house_bidding_log)):
@@ -563,6 +579,7 @@ class GameState(object):
     BUY_CARD                =   'buy_card'
     PLAY_CARD               =   'play_card'
     POST_WAR                =   'post_war'
+    RESOLVE_CIVIL_WAR       =   'resolve_civil_war'
     APPLY_RENAISSANCE       =   'apply_renaissance'
     APPLY_WATERMILL         =   'apply_watermill'
     REMOVE_SURPLUS_SHORTAGE =   'remove_shortage_surplus'
@@ -578,6 +595,7 @@ class GameState(object):
         BUY_CARD                : 'BuyCardsState',
         PLAY_CARD               : 'PlayCardsState',
         POST_WAR                : 'PostWarState',
+        RESOLVE_CIVIL_WAR       : 'ResolveCivilWarState',
         APPLY_RENAISSANCE       : 'ApplyRenaissanceState',
         APPLY_WATERMILL         : 'ApplyWatermillState',
         REMOVE_SURPLUS_SHORTAGE : 'RemoveSurplusShortageState',
@@ -1162,7 +1180,7 @@ class PlayCardsState(GameState):
             h = self.info.getHouseInfo(params['target'])
             if 'C' in h.advances.keys():
                 raise Action.InvalidParameter( \
-                        "You can't play 'Alchemist's Gold' on player '" + params['target'] + "'."
+                        "You cannot play 'Alchemist's Gold' on player '" + params['target'] + "'."
                 )
 
             l = self.info.getTurnLog(params['target'])
@@ -1185,11 +1203,13 @@ class PlayCardsState(GameState):
             if self.info.is_valid_player( params['target'] ) == False :
                 raise Action.InvalidParameter("Player '" + params['target'] + "' is not in the game.")
 
-            self.info.civil_war = params['target']
-            pass
+            # 대상 플레이어가 토큰과 캐시 중 하나를 선택한 다음, 모든 값을 조정한다.
+            self.info.state = params['target'] + '.' + GameState.RESOLVE_CIVIL_WAR + '.' + self.info.state
         elif card =='E15_cru':
             if 'target' not in params.keys() :
                 raise Action.InvalidParameter("'The Crusades' requires 'target' parameter.")
+            #h = self.info.getHouseInfo(params['target'])
+            #self.crusades = None
             pass
         elif card =='E16_rul':
             self.info.enlightened_ruler = user_id
@@ -1200,13 +1220,61 @@ class PlayCardsState(GameState):
         elif card =='E19_bow':
             self.info.longbow = user_id
         elif card =='E20_mys':
-            pass
+            edition = Edition.objects.filter(name=self.info.edition)
+            advances = Advanc.objects.filter(edition=edition).filter(category=Advance.SCIENCE)
+            science_advances = []
+            for a in advances:
+                science_advances.append(a.ahort_name)
+            science_advances_set = set(science_advances)
+            sum_misery_level = 0
+
+            for key in self.info.houses:
+                h = self.info.getHouseInfo(key)
+                dev_set = set(h.advances).intersection(science_advances_set)
+                h.adjust_misery(len(science_advances_set) - len(dev_set))
+                sum_misery_level += len(science_advances_set) - len(dev_set) 
+
+            if sum_misery_level == 0 :
+                # 본래는 GameInfo 데이터 변경 후에 exception을 내보내면 안되지만, 
+                # 이 경우는 아무도 영향을 받지 않았으므로, 사실상 변경이 없는 셈이라 
+                # exception을 발생해도 별 문제가 없다.
+                raise Action.InvalidParameter( "You cannot play 'Mysticism Abounds' any more.")
         elif card =='E21_mon':
-            pass
+            h = self.info.getHouseInfo(user_id)
+            l = self.info.getTurnLog(user_id)
+
+            h.cash += 10
+            l.card_income += 10
+
+            self.mongol_armies = True
         elif card =='E22_pap':
             if 'target' not in params.keys() :
                 raise Action.InvalidParameter("'Papal Decree' requires 'target' parameter.")
-            pass
+            if params['target'] not in ( 'Science', 'Religion', 'Exploration' ):
+                raise Action.InvalidParameter("'target' must be one of 'Science', 'Religion', 'Exploration'")
+            if self.info.epoch == 3 and self.info.religious_strife == True:
+                raise Action.InvalidParameter( "You cannot play 'Papal Decree' any more.")
+
+            if self.info.religious_strife == True:
+                # 이 때도 플레이는 가능하지만, 게임에는 아무런 영향을 미칠 수 없다 
+                pass
+            else:
+                edition = Edition.objects.filter(name=self.info.edition)
+                if params['target'] == 'Science':
+                    advances = Advanc.objects   \
+                                .filter(edition=edition) \
+                                .filter(category=Advance.SCIENCE)
+                elif params['target'] == 'Religion':
+                    advances = Advanc.objects   \
+                                .filter(edition=edition) \
+                                .filter(category=Advance.RELIGION)
+                else: # params['target'] == 'Exploration':
+                    advances = Advanc.objects   \
+                                .filter(edition=edition) \
+                                .filter(category=Advance.EXPLORATION)
+                self.papal_decree = []
+                for a in advances:
+                    self.papal_decree.append(a.short_name)
         elif card =='E23_vik':
             if 'target' not in params.keys() :
                 raise Action.InvalidParameter("'Pirates / Vikings' requires 'target' parameter.")
@@ -1216,9 +1284,31 @@ class PlayCardsState(GameState):
                 raise Action.InvalidParameter("'Rebellion' requires 'target' parameter.")
             pass
         elif card =='E25_rel':
-            pass
+            edition = Edition.objects.filter(name=self.info.edition)
+            advances = Advanc.objects.filter(edition=edition).filter(category=Advance.RELIGION)
+            religion_advances = []
+            for a in advances:
+                religion_advances.append(a.ahort_name)
+            religion_advances_set = set(religion_advances)
+
+            for key in self.info.houses:
+                h = self.info.getHouseInfo(key)
+                dev_set = set(h.advances).intersection(religion_advances_set)
+                h.adjust_misery(len(dev_set))
+
+            self.papal_decree = []
         elif card =='E26_rev':
-            pass
+            edition = Edition.objects.filter(name=self.info.edition)
+            advances = Advanc.objects.filter(edition=edition).filter(category=Advance.COMMERCE)
+            commerce_advances = []
+            for a in advances:
+                commerce_advances.append(a.ahort_name)
+            commerce_advances_set = set(commerce_advances)
+
+            for key in self.info.houses:
+                h = self.info.getHouseInfo(key)
+                dev_set = set(h.advances).intersection(commerce_advances_set)
+                h.adjust_misery(len(dev_set))
         elif card =='E27_sti':
             self.info.stirrups = user_id
         elif card =='E28_war':
@@ -1232,13 +1322,16 @@ class PlayCardsState(GameState):
             response['queue_action'] = { 'action': Action.RESOLVE_WAR, '_player': user_id }
 
         self.info.card_log['epoch_' + str(self.info.epoch)][card] = self.info.turn
-        #self.papal_decree = None
-        #self.crusades = None
-        #self.mongol_armies = None
         return response
 
 class PostWarState(GameState):
     def action(self, a, user_id=None, params={}):
+        return super(PostWarState, self).action(a, params)
+
+class ResolveCivilWarState(GameState):
+    def action(self, a, user_id=None, params={}):
+        #h.adjust_misery( 1 )
+        #self.info.civil_war = params['target']
         return super(PostWarState, self).action(a, params)
 
 class PurchaseState(GameState):
