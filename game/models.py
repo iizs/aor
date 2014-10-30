@@ -276,6 +276,12 @@ class GameInfo(object):
         self.enlightened_ruler = None
         self.civil_war = None
         self.papal_decree = None
+        self.armor = None
+        self.stirrups = None
+        self.longbow = None
+        self.gunpowder = None
+        self.crusades = None
+        self.mongol_armies = None
 
         if game != None: 
             if isinstance(game, Game) != True:
@@ -289,14 +295,16 @@ class GameInfo(object):
                 h.user_id = p.user_id
                 self.house_bidding_log.append(h)
 
-    def getHouseInfo(self, player):
-        return self.houses[ self.players_map[ player ] ]
+    def getHouseInfo(self, key):
+        if key in self.houses:
+            return self.houses[key]
+        return self.houses[ self.players_map[ key ] ]
 
-    def getTurnLog(self, player, turn=None):
+    def getTurnLog(self, key, turn=None):
         ''' turn is 1-based '''
         if turn == None:
             turn = self.turn
-        return self.getHouseInfo(player).turn_logs[turn - 1]
+        return self.getHouseInfo(key).turn_logs[turn - 1]
 
     def prepare_new_turn(self):
         self.clear_play_order()
@@ -310,12 +318,22 @@ class GameInfo(object):
         self.civil_war = None
         self.papal_decree = None
 
+        self.armor = None
+        self.stirrups = None
+        self.longbow = None
+        self.gunpowder = None
+
+        self.crusades = None
+
     def get_house_choice_order(self, player) :
         for i in range(len(self.house_bidding_log)):
             if self.house_bidding_log[i].user_id == player :
                 return i
         # Exception을 raise하는 것이 더 좋을지도...
         return None
+
+    def is_valid_player(self, player):
+        return player in self.info.players_map.keys()
 
     def clear_play_order(self):
         self.play_order = []
@@ -1073,7 +1091,7 @@ class PlayCardsState(GameState):
             elif card[0] == 'L':
                 response = self.play_leader_card(card)
             else :
-                response = self.play_event_card(card, params)
+                response = self.play_event_card(card, user_id, params)
 
             h.hands.remove(card)
             self.info.discard_stack.append(card)
@@ -1120,8 +1138,9 @@ class PlayCardsState(GameState):
 
         for key in owners:
             income = owners[key] * owners[key] * commodity.unit_price
-            h = self.info.houses[key]
-            h.turn_logs[ self.info.turn - 1 ].card_income += income
+            h = self.info.getHouseInfo(key)
+            l = self.info.getTurnLog(key)
+            l.card_income += income
             h.cash += income
 
         self.info.card_log['epoch_' + str(self.info.epoch)][card] = self.info.turn
@@ -1131,8 +1150,91 @@ class PlayCardsState(GameState):
         response = {}
         return response
 
-    def play_event_card(self, card, params):
+    def play_event_card(self, card, user_id, params):
         response = {}
+
+        if card == 'E11_A' :
+            if 'target' not in params.keys() :
+                raise Action.InvalidParameter("'Alchemist's Gold' requires 'target' parameter.")
+            if self.info.is_valid_player( params['target'] ) == False :
+                raise Action.InvalidParameter("Player '" + params['target'] + "' is not in the game.")
+
+            h = self.info.getHouseInfo(params['target'])
+            if 'C' in h.advances.keys():
+                raise Action.InvalidParameter( \
+                        "You can't play 'Alchemist's Gold' on player '" + params['target'] + "'."
+                )
+
+            l = self.info.getTurnLog(params['target'])
+            wc = l.written_cash()
+            penalty = ( wc + 1 ) / 2 # 0.5 는 반올림하기 위해서, wc + 1 을 2로 나눔
+            if penalty > h.cash : 
+                penalty = h.cash
+
+            h.cash -= penalty
+            l.card_damage += penalty
+        elif card =='E12_arm':
+            self.info.armor = user_id
+        elif card =='E13_B':
+            if 'target' not in params.keys() :
+                raise Action.InvalidParameter("'Black Death' requires 'target' parameter.")
+            pass
+        elif card =='E14_C':
+            if 'target' not in params.keys() :
+                raise Action.InvalidParameter("'Civil War' requires 'target' parameter.")
+            if self.info.is_valid_player( params['target'] ) == False :
+                raise Action.InvalidParameter("Player '" + params['target'] + "' is not in the game.")
+
+            self.info.civil_war = params['target']
+            pass
+        elif card =='E15_cru':
+            if 'target' not in params.keys() :
+                raise Action.InvalidParameter("'The Crusades' requires 'target' parameter.")
+            pass
+        elif card =='E16_rul':
+            self.info.enlightened_ruler = user_id
+        elif card =='E17_fam':
+            pass
+        elif card =='E18_gun':
+            self.info.gunpowder = user_id
+        elif card =='E19_bow':
+            self.info.longbow = user_id
+        elif card =='E20_mys':
+            pass
+        elif card =='E21_mon':
+            pass
+        elif card =='E22_pap':
+            if 'target' not in params.keys() :
+                raise Action.InvalidParameter("'Papal Decree' requires 'target' parameter.")
+            pass
+        elif card =='E23_vik':
+            if 'target' not in params.keys() :
+                raise Action.InvalidParameter("'Pirates / Vikings' requires 'target' parameter.")
+            pass
+        elif card =='E24_reb':
+            if 'target' not in params.keys() :
+                raise Action.InvalidParameter("'Rebellion' requires 'target' parameter.")
+            pass
+        elif card =='E25_rel':
+            pass
+        elif card =='E26_rev':
+            pass
+        elif card =='E27_sti':
+            self.info.stirrups = user_id
+        elif card =='E28_war':
+            if 'target' not in params.keys() :
+                raise Action.InvalidParameter("'War!' requires 'target' parameter.")
+            if self.info.is_valid_player( params['target'] ) == False :
+                raise Action.InvalidParameter("Player '" + params['target'] + "' is not in the game.")
+
+            self.info.war['attacker'] = user_id
+            self.info.war['defender'] = params['target']
+            response['queue_action'] = { 'action': Action.RESOLVE_WAR, '_player': user_id }
+
+        self.info.card_log['epoch_' + str(self.info.epoch)][card] = self.info.turn
+        #self.papal_decree = None
+        #self.crusades = None
+        #self.mongol_armies = None
         return response
 
 class PostWarState(GameState):
