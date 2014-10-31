@@ -194,12 +194,14 @@ class HouseInfo(object):
     SHIP_SEAWROTHY = 'seaworthy'
     SHIP_OCEANGOING = 'oceangoing'
 
-    def __init__(self, user_id=None, cash=40, hands=[]):
+    def __init__(self, house_name=None, user_id=None, cash=40, hands=[]):
         self.user_id = user_id
+        self.house_name = house_name
         self.misery = 0
         self.advances = {}
         self.hands = hands
         self.cash = cash
+        self.dominance_marker = 25
         self.stock_tokens = 36
         self.expansion_tokens = 0
         self.ship_type = None
@@ -310,9 +312,12 @@ class GameInfo(object):
                 self.house_bidding_log.append(h)
 
     def getHouseInfo(self, key):
-        if key in self.houses:
-            return self.houses[key]
-        return self.houses[ self.players_map[ key ] ]
+        try:
+            if key in self.houses:
+                return self.houses[key]
+            return self.houses[ self.players_map[ key ] ]
+        except KeyError as e:
+            raise GameInfo.HouseNotFound("'" + key  + "' is not a valid house / player name.")
 
     def getTurnLog(self, key, turn=None):
         ''' turn is 1-based '''
@@ -493,6 +498,118 @@ class GameInfo(object):
         if method != GameInfo.SHUFFLE_TURN2 :
             self.discard_stack = []
         return list(self.draw_stack)
+
+    def get_province(self, province_name):
+        if province_name not in self.provinces:
+            raise GameInfo.ProvinceNotFound("'" + province_name  + "' is not a valid province name.")
+        return self.provinces[province_name]
+
+    def add_tokens(self, province_name, user_id, num_tokens, from_expansion=True, colored=False):
+        p = self.get_province(province_name)
+        edition = Edition.objects.filter(name__exact=self.info.edition)
+        p_info = Province.objects.filter(edition=edition, short_name=province_name)
+
+        if "color-marker" in p or "white-marker" in p : 
+            raise GameInfo.ConflictOccurs( "Dominance marker exists" )
+
+        all_tokens = 0
+        for i in ("color-token", "white-token"):
+            if i in p:
+                for k in p[i]:
+                    all_tokens += p[i][k]
+        
+        if all_tokens + num_tokens > p_info.market_size :
+            raise GameInfo.ConflictOccurs(  \
+                    "market: " + str(p_info.market_size) + ", " + \
+                    "current: " + str(all_tokens) + ", " + \
+                    "new: " + str(num_tokens) )
+
+        h = self.getHouseInfo(user_id)
+        k = "white-token" if colored == False else "color-token"
+
+        if from_expansion == True :
+            if h.expansion_tokens < num_tokens:
+                raise GameInfo.NotEnoughTokens( "You have only " + str(h.expansion_tokens) + " tokens" )
+            h.expansion_tokens -= num_tokens
+        else:
+            if h.stock_tokens < num_tokens:
+                raise GameInfo.NotEnoughTokens( "You have only " + str(h.stock_tokens) + " tokens" )
+            h.stock_tokens -= num_tokens
+
+        if h.house_name not in p[k]:
+            p[k][h.house_name] = 0
+        p[k][h.house_name] += num_tokens
+
+    def remove_tokens(self, province_name):
+        p = self.get_province(province_name)
+        if "color-token" in p:
+            for k in p["color-token"]:
+                h = getHouseInfo(k)
+                h.stock_tokens += p["color-token"][k]
+            del p["color-token"]
+
+        if "white-token" in p:
+            for k in p["white-token"]:
+                h = getHouseInfo(k)
+                h.stock_tokens += p["white-token"][k]
+            del p["white-token"]
+
+    def set_marker(self, province_name, user_id, colored=False):
+        self.remove_marker(province_name)
+        self.remove_tokens(province_name)
+
+        p = self.get_province(province_name)
+        h = self.getHouseInfo(user_id)
+        k = "white-marker" if colored == False else "color-marker"
+
+        if h.dominance_marker == 0 :
+            raise GameInfo.NotEnoughDominanceMarker("No dominance marker left")
+
+        p[k] = h.house_name
+        h.dominance_marker -= 1
+
+    def remove_marker(self, province_name):
+        p = self.get_province(province_name)
+
+        if "color-marker" in p: 
+            h = self.getHouseInfo(p["color-marker"])
+            h.dominance_marker += 1
+            del p["color-marker"]
+
+        if "white-marker" in p:
+            h = self.getHouseInfo(p["white-marker"])
+            h.dominance_marker += 1
+            del p["white-marker"]
+
+    class ProvinceNotFound(Exception):
+        def __init__(self, message):
+            self.message = message
+        def __unicode__(self):
+            return repr(self.message)
+
+    class HouseNotFound(Exception):
+        def __init__(self, message):
+            self.message = message
+        def __unicode__(self):
+            return repr(self.message)
+
+    class NotEnoughTokens(Exception):
+        def __init__(self, message):
+            self.message = message
+        def __unicode__(self):
+            return repr(self.message)
+
+    class NotEnoughDominanceMarker(Exception):
+        def __init__(self, message):
+            self.message = message
+        def __unicode__(self):
+            return repr(self.message)
+
+    class ConflictOccurs(Exception):
+        def __init__(self, message):
+            self.message = message
+        def __unicode__(self):
+            return repr(self.message)
 
 class GameInfoEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -795,13 +912,14 @@ class ChooseCapitalState(GameState):
             bidinfo = self.info.house_bidding_log[len(self.info.houses)]
 
             h = HouseInfo(
+                    house_name=choice,
                     user_id=user_id,
                     hands = list(bidinfo.draw_cards),
                     cash = 40 - bidinfo.bid,
             )
             self.info.houses[choice] = h
             self.info.players_map[user_id] = choice
-            self.info.provinces[choice]['color-marker'] = choice
+            self.info.set_marker(choice, user_id, colored=True)
 
             # 마지막 플레이어만 남았다면 자동으로 남은 수도를 선택하도록 함
             available.remove(choice)
@@ -1196,6 +1314,24 @@ class PlayCardsState(GameState):
         elif card =='E13_B':
             if 'target' not in params.keys() :
                 raise Action.InvalidParameter("'Black Death' requires 'target' parameter.")
+            playable_area = [1, 2, 3, 4, 5, 6, 7, 8][6-self.info.num_players:]
+            if params['target'] not in playable_area:
+                raise Action.InvalidParameter("You cannot play 'Black Death' on Area " + params['target'] + ".")
+
+            edition = Edition.objects.filter(name=self.info.edition)
+            # token 부터 회수하고, dominance marker를 token으로 교환한다. 
+            provinces = Province.objects                    \
+                            .filter(edition=edition)        \
+                            .filter(area=params['target'])  \
+                            .order_by('market_size')
+
+            #for p in provinces:
+                #if "color-tokens" in self.info.provinces[p.short_name] :
+                    #for k in self.info.provinces[p.short_name]["color-tokens"] :
+                        #h = getHouseInfo(h)
+                        #t_num = self.info.provinces[p.short_name]["color-tokens"][k]
+                        #h.self.stock_tokens += t_num
+
             pass
         elif card =='E14_C':
             if 'target' not in params.keys() :
