@@ -11,7 +11,7 @@ AREA_VI         = '6'
 AREA_VII        = '7'
 AREA_VIII       = '8'
 AREA_FAR_EAST   = 'F'
-AREA_NEW_WROLD  = 'N'
+AREA_NEW_WORLD  = 'N'
 AREA_ND         = 'X'
 AREA = (
     (AREA_I, 'I'),
@@ -23,7 +23,7 @@ AREA = (
     (AREA_VII, 'VII'),
     (AREA_VIII, 'VIII'),
     (AREA_FAR_EAST, 'Far East'),
-    (AREA_NEW_WROLD, 'New World'),
+    (AREA_NEW_WORLD, 'New World'),
     (AREA_ND, 'Not Defined'),
 )
 
