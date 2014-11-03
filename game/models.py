@@ -7,7 +7,8 @@ import json
 import random
 
 from player.models import Player
-from rule.models import Edition, HistoryCard, EventCard, LeaderCard, CommodityCard, Province, Commodity
+from rule.models import Edition, HistoryCard, EventCard, LeaderCard, CommodityCard, Province, Commodity, Water
+from rule.models import AREA_FAR_EAST, AREA_NEW_WORLD, AREA_VI
 
 class GetOrNoneManager(models.Manager):
     """Adds get_or_none method to objects
@@ -298,6 +299,7 @@ class GameInfo(object):
         self.crusades = None
         self.mongol_armies = False
         self.religious_strife = False
+        self.marker_removal = {}
 
         if game != None: 
             if isinstance(game, Game) != True:
@@ -581,6 +583,35 @@ class GameInfo(object):
             h.dominance_marker += 1
             del p["white-marker"]
 
+    def add_marker_removal(self, province_name):
+        p = self.get_province(province_name)
+
+        if "color-marker" in p:
+            h = self.getHouseInfo(p["color-marker"])
+            if h.house_name not in self.marker_removal:
+                self.marker_removal[h.house_name] = []
+            self.marker_removal[h.house_name].append(province_name)
+        else:
+            raise MarkerNotFound("No dominance marker found on '" + province_name + "'")
+
+    def resolve_marker_removal(self):
+        for n in self.info.marker_removal:
+            h = self.info.getHouseInfo(n)
+            if len(self.info.marker_removal[n]) <= h.stock_tokens:
+                for p in self.info.marker_removal[n]:
+                    self.info.remove_marker(p)
+                    self.info.add_tokens(p, n, 1, from_expansion=False, colored=True)
+                del self.info.marker_removal[n]
+
+        if self.info.marker_removal:
+            for key in self.info.play_order:
+                if self.info.players_map[key] in self.info.marker_removal:
+                    # 앞 순서의 player부터 token 사용 여부를 결정하도록 한다.
+                    self.info.state = key + '.' + GameInfo.REMOVE_MARKER + '.' + self.info.state
+
+    def clear_marker_removal(self):
+        self.marker_removal = {}
+
     class ProvinceNotFound(Exception):
         def __init__(self, message):
             self.message = message
@@ -588,6 +619,12 @@ class GameInfo(object):
             return repr(self.message)
 
     class HouseNotFound(Exception):
+        def __init__(self, message):
+            self.message = message
+        def __unicode__(self):
+            return repr(self.message)
+
+    class MarkerNotFound(Exception):
         def __init__(self, message):
             self.message = message
         def __unicode__(self):
@@ -697,6 +734,7 @@ class GameState(object):
     PLAY_CARD               =   'play_card'
     POST_WAR                =   'post_war'
     RESOLVE_CIVIL_WAR       =   'resolve_civil_war'
+    REMOVE_MARKER           =   'remove_marker'
     APPLY_RENAISSANCE       =   'apply_renaissance'
     APPLY_WATERMILL         =   'apply_watermill'
     REMOVE_SURPLUS_SHORTAGE =   'remove_shortage_surplus'
@@ -713,6 +751,7 @@ class GameState(object):
         PLAY_CARD               : 'PlayCardsState',
         POST_WAR                : 'PostWarState',
         RESOLVE_CIVIL_WAR       : 'ResolveCivilWarState',
+        REMOVE_MARKER           : 'RemoveMarkerState',
         APPLY_RENAISSANCE       : 'ApplyRenaissanceState',
         APPLY_WATERMILL         : 'ApplyWatermillState',
         REMOVE_SURPLUS_SHORTAGE : 'RemoveSurplusShortageState',
@@ -1283,6 +1322,7 @@ class PlayCardsState(GameState):
         return response
 
     def play_leader_card(self, card):
+        # TODO implement
         response = {}
         return response
 
@@ -1290,6 +1330,9 @@ class PlayCardsState(GameState):
         response = {}
 
         if card == 'E11_A' :
+            # A player of your choice may pay half of written cash to Banker. Penalty cannot exceed current cash. 
+            # Cash already spent on Patronage defense is not vulnerable. Voided by LAWS OF MATTER. 
+            # If all players have LAWS OF MATTER, this card becomes unplayable Misery burden.                                    
             if 'target' not in params.keys() :
                 raise Action.InvalidParameter("'Alchemist's Gold' requires 'target' parameter.")
             if self.info.is_valid_player( params['target'] ) == False :
@@ -1310,8 +1353,16 @@ class PlayCardsState(GameState):
             h.cash -= penalty
             l.card_damage += penalty
         elif card =='E12_arm':
+            # A temporary Arms advantage enhances your trading ventures. 
+            # You win all Attack ties this turn (including WAR). 
+            # Add 1 to your competition totals this turn on both offense and defense. Voided by LONG BOW or GUNPOWDER. 
+            # If voided, ARMOR becomes unplayable Misery burden.                                 
             self.info.armor = user_id
         elif card =='E13_B':
+            # Select one Area to be hit by the plague. 
+            # All Colored Tokens (squares) in that Area are returned to their respective Stocks. 
+            # Then reduce all Colored Dominance Markers (circles) of all players in that Area 
+            # to a single Colored Token (square) per Province.                                    
             if 'target' not in params.keys() :
                 raise Action.InvalidParameter("'Black Death' requires 'target' parameter.")
             playable_area = [1, 2, 3, 4, 5, 6, 7, 8][6-self.info.num_players:]
@@ -1325,15 +1376,20 @@ class PlayCardsState(GameState):
                             .filter(area=params['target'])  \
                             .order_by('market_size')
 
-            #for p in provinces:
-                #if "color-tokens" in self.info.provinces[p.short_name] :
-                    #for k in self.info.provinces[p.short_name]["color-tokens"] :
-                        #h = getHouseInfo(h)
-                        #t_num = self.info.provinces[p.short_name]["color-tokens"][k]
-                        #h.self.stock_tokens += t_num
+            self.info.clear_marker_removal()
+            for p in provinces:
+                try: 
+                    self.info.add_marker_removal(p.short_name)
+                except MarkerNotFound as e:
+                    self.info.remove_tokens(p.short_name)
 
-            pass
+            self.info.resolve_marker_removal()
         elif card =='E14_C':
+            # A player of your choice is struck by CIVIL WAR. He gains one Misery. 
+            # Any Dominance Marker (circle) in his Capital is reduced to a Colored Token (square). 
+            # He must lose his choice of half of his last recorded cash or half of his bid tokens (squares). 
+            # At start of the Expansion Phase, his Order of play position becomes "last".                                  
+
             if 'target' not in params.keys() :
                 raise Action.InvalidParameter("'Civil War' requires 'target' parameter.")
             if self.info.is_valid_player( params['target'] ) == False :
@@ -1342,20 +1398,71 @@ class PlayCardsState(GameState):
             # 대상 플레이어가 토큰과 캐시 중 하나를 선택한 다음, 모든 값을 조정한다.
             self.info.state = params['target'] + '.' + GameState.RESOLVE_CIVIL_WAR + '.' + self.info.state
         elif card =='E15_cru':
+            # Place one of your Colored Dominance Markers (circle) anywhere within Area VI 
+            # and remove any other markers in that Province. Gain one Misery. 
+            # This card increases the credits for WALTER THE PENNILESS if he is also played this turn. 
+            # Voided by MONGOL ARMIES in Epoch 2 or Epoch 3 and becomes unplayable Misery burden.
+            if self.info.mongol_armies == True :
+                raise Action.InvalidParameter( "You cannot play 'The Crusades' any more.")
+
             if 'target' not in params.keys() :
                 raise Action.InvalidParameter("'The Crusades' requires 'target' parameter.")
-            #h = self.info.getHouseInfo(params['target'])
-            #self.crusades = None
-            pass
+
+            edition = Edition.objects.filter(name=self.info.edition)
+            province = Province.objects.get(edition=edition, short_name=params['target'])
+
+            if province.area != AREA_VI:
+                raise Action.InvalidParameter("'target' parameter must be the short name of a Province in Area VI.")
+
+            h = self.info.getHouseInfo(user_id)
+            self.info.set_marker(params['target'], user_id, colored=True)
+            self.info.crusades = user_id
+            h.adjust_misery(1)
         elif card =='E16_rul':
+            # Play on yourself to void the effects of MYSTICISM, RELIGIOUS STRIFE, CIVIL WAR, 
+            # REVOLUTIONARY UPRISINGS, REBELLION, and ALCHEMIST'S GOLD for the rest of the turn.
             self.info.enlightened_ruler = user_id
         elif card =='E17_fam':
-            pass
+            # All players gain four spaces on the Misery Index minus one space for each Grain Province they dominate. 
+            # Having [J] Improved Agriculture also reduces the penalty by one space.                                  
+            edition = Edition.objects.filter(name=self.info.edition)
+            commodity = Commodity.objects.get(edition=edition, full_name='Grain')
+
+            provinces = Province.objects.filter(edition=edition, commodities=commodity)
+
+            grain_owners = {}
+            for p in provinces:
+                if "color-marker" in self.info.provinces[p.short_name] :
+                    grain_owner = self.info.provinces[p.short_name]["color-marker"]
+                    if grain_owner not in grain_owners:
+                        grain_owners[grain_owner] = 0
+                    grain_owners[grain_owner] += 1
+
+            for key in self.info.houses:
+                penalty = 4
+                h = self.info.getHouseInfo(key)
+                if 'J' in h.advances:
+                    penalty -= 1
+                if h in grain_owners:
+                    penalty -= grain_owners[key]
+                if penalty > 0:
+                    h.adjust_misery(penalty)
         elif card =='E18_gun':
+            # A temporary Arms advantage enhances your trading ventures. 
+            # You win all Attack ties this turn (including WAR). 
+            # Add 1 to all your competition totals this turn on both offense and defense. 
+            # Voids ARMOR and STIRRUPS and turns them into Misery burdens.                                    
             self.info.gunpowder = user_id
         elif card =='E19_bow':
+            # A temporary Arms advantage enhances your trading ventures. 
+            # You win all Attack ties this turn (including WAR). 
+            # Add 1 to all your competition totals this turn on both offense and defense 
+            # except against players currently using GUNPOWDER. 
+            # Voids ARMOR and STIRRUPS and turns them into Misery burdens.                                   
             self.info.longbow = user_id
         elif card =='E20_mys':
+            # All players gain four spaces on the Misery Index minus one space for each Science Advance [A,B,C,D] held. 
+            # This card becomes a worthless Misery burden if all players own all four Sciences [A,B,C,D]. 
             edition = Edition.objects.filter(name=self.info.edition)
             advances = Advanc.objects.filter(edition=edition).filter(category=Advance.SCIENCE)
             science_advances = []
@@ -1376,6 +1483,9 @@ class PlayCardsState(GameState):
                 # exception을 발생해도 별 문제가 없다.
                 raise Action.InvalidParameter( "You cannot play 'Mysticism Abounds' any more.")
         elif card =='E21_mon':
+            # Collect $10 from the Bank. MARCO POLO credits are doubled if played hereafter. 
+            # THE CRUSADES event becomes  unplayable Misery burden.                                  
+
             h = self.info.getHouseInfo(user_id)
             l = self.info.getTurnLog(user_id)
 
@@ -1384,6 +1494,10 @@ class PlayCardsState(GameState):
 
             self.mongol_armies = True
         elif card =='E22_pap':
+            # You may ban the acquisition by all players of any Advance in one of the following three categories: 
+            #   Science [A,B,C,D], Religion [E,F,G,H] and Exploration [R,S,T,U]. 
+            # Voided by RELIGIOUS STRIFE played in the same turn. 
+            # When RELIGIOUS STRIFE occurs in Epoch 3, this card becomes an unplayable Misery burden.  
             if 'target' not in params.keys() :
                 raise Action.InvalidParameter("'Papal Decree' requires 'target' parameter.")
             if params['target'] not in ( 'Science', 'Religion', 'Exploration' ):
@@ -1412,14 +1526,49 @@ class PlayCardsState(GameState):
                 for a in advances:
                     self.papal_decree.append(a.short_name)
         elif card =='E23_vik':
-            if 'target' not in params.keys() :
-                raise Action.InvalidParameter("'Pirates / Vikings' requires 'target' parameter.")
-            pass
+            # Reduce any Dominance Marker (circle) to a Colored Token (square) in any coastal Province of your choice. 
+            # If played during Epoch II, reduce two Colored Dominance Markers (circles). 
+            # If played during Epoch III, reduce three Colored Dominance Markers (circles).                                 
+            if 'targets' not in params.keys() :
+                raise Action.InvalidParameter("'Pirates / Vikings' requires 'targets' parameter.")
+            if isinstance(params['targets'], list) == False or len(params['targets']) != self.info.epoch :
+                raise Action.InvalidParameter( \
+                            "'targets' parameter must be an array of " + self.info.epoch + " Coastal Provinces"
+                )
+
+            edition = Edition.objects.filter(name=self.info.edition)
+            self.info.clear_marker_removal()
+
+            for key in params['targets']:
+                p = Province.objects.get(edition=edition, short_name=key)
+                self.info.add_marker_removal(p.short_name)
+                if p.area == AREA_FAR_EAST or p.area == AREA_NEW_WORLD:
+                    continue
+                else:
+                    w = Water.objects.filter(edition=edition, coast_of=p)
+                    if len(w) == 0:
+                        self.info.clear_marker_removal()
+                        raise Action.InvalidParameter( \
+                                "'targets' parameter must be an array of " + self.info.epoch + " Coastal Provinces"
+                        )
+
+            self.info.resolve_marker_removal()
         elif card =='E24_reb':
+            # Local conflict occurs in any province of your choice except the New World and foreign capitals. 
+            # Any Colored Dominance Marker (circle) in that province is reduced to a Colored Token (square).
             if 'target' not in params.keys() :
                 raise Action.InvalidParameter("'Rebellion' requires 'target' parameter.")
+
+            edition = Edition.objects.filter(name=self.info.edition)
+            p = Province.objects.get(edition=edition, short_name=params['target'])
+            if p.province_type == Province.CAPITAL or p.area == AREA_NEW_WORLD :
+                pass
             pass
         elif card =='E25_rel':
+            # All players increase Misery one space for each Religion Advance [E,F,G,H] they hold. 
+            # Voids PAPAL DECREE, if played in the same turn. 
+            # If played in Epoch 3, the PAPAL DECREE card becomes an unplayable Misery burden.                                 
+
             edition = Edition.objects.filter(name=self.info.edition)
             advances = Advanc.objects.filter(edition=edition).filter(category=Advance.RELIGION)
             religion_advances = []
@@ -1432,8 +1581,10 @@ class PlayCardsState(GameState):
                 dev_set = set(h.advances).intersection(religion_advances_set)
                 h.adjust_misery(len(dev_set))
 
+            # Papal Decree가 선언되었다면 무효화시킨다.
             self.papal_decree = []
         elif card =='E26_rev':
+            # Each player gains one space on the Misery Index for each Commerce Advance [I,J,K,L,M] he holds.
             edition = Edition.objects.filter(name=self.info.edition)
             advances = Advanc.objects.filter(edition=edition).filter(category=Advance.COMMERCE)
             commerce_advances = []
@@ -1446,8 +1597,20 @@ class PlayCardsState(GameState):
                 dev_set = set(h.advances).intersection(commerce_advances_set)
                 h.adjust_misery(len(dev_set))
         elif card =='E27_sti':
+            # A temporary Arms advantage enhances your trading ventures. 
+            # You win all Attack ties this turn (including WAR). 
+            # Add 1 to all your competition totals this turn on both offense and defense, 
+            # except against player currently using ARMOR. 
+            # Voided by LONG BOW or GUNPOWDER. If voided, STIRRUPS becomes unplayable Misery burden.
             self.info.stirrups = user_id
         elif card =='E28_war':
+            # Declare WAR on any player. Each player rolls 1 die. 
+            # [W] Nationalism & Military Advantages modify their owner's die roll by +1 (each). 
+            # Highest total gains one Misery, lowest total gains two Misery. 
+            # The difference between the modified die rolls is the amount of supportable 
+            # Colored Dominance Markers (circles) the loser must cede to the winner (loser's choice). 
+            # If tied, both sides gain one Misery and continue resolution in each succeeding round of 
+            # the Play Cards Phase until one side wins.                                 
             if 'target' not in params.keys() :
                 raise Action.InvalidParameter("'War!' requires 'target' parameter.")
             if self.info.is_valid_player( params['target'] ) == False :
@@ -1469,6 +1632,12 @@ class ResolveCivilWarState(GameState):
         #h.adjust_misery( 1 )
         #self.info.civil_war = params['target']
         return super(PostWarState, self).action(a, params)
+
+class RemoveMarkerState(GameState):
+    def action(self, a, user_id=None, params={}):
+        #h.adjust_misery( 1 )
+        #self.info.civil_war = params['target']
+        return super(RemoveMarkerState, self).action(a, params)
 
 class PurchaseState(GameState):
     def action(self, a, user_id=None, params={}):
