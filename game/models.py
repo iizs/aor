@@ -1264,7 +1264,7 @@ class PlayCardsState(GameState):
             if card[0] == 'C':
                 response = self.play_commodity_card(card, params)
             elif card[0] == 'L':
-                response = self.play_leader_card(card)
+                response = self.play_leader_card(card, user_id)
             else :
                 response = self.play_event_card(card, user_id, params)
 
@@ -1321,9 +1321,28 @@ class PlayCardsState(GameState):
         self.info.card_log['epoch_' + str(self.info.epoch)][card] = self.info.turn
         return response
 
-    def play_leader_card(self, card):
-        # TODO implement
+    def play_leader_card(self, card, user_id):
         response = {}
+        edition = Edition.objects.filter(name=self.info.edition)
+        leader_card = LeaderCard.objects.get(edition=edition, short_name=card)
+
+        h = self.info.getHouseInfo(user_id)
+        l = self.info.getTurnLog(user_id)
+        if 'O' in h.advances:
+            credit = leader_card.discount
+            if leader_card.short_name == 'L15_R' and self.info.crusades != None:
+                credit = leader_card.discount_on_event
+            elif leader_card.short_name == 'L25_RY' and self.info.mongol_armies == True:
+                credit = leader_card.discount_on_event
+
+            for a in leader_card.advances.all():
+                if a.short_name in h.advances:
+                    l.card_income += income
+                    h.cash += income
+
+        self.info.leader.stack.append(card)
+        self.info.leader.player[card] = user_id
+        self.info.leader.play_log[card] = self.info.turn
         return response
 
     def play_event_card(self, card, user_id, params):
@@ -1561,9 +1580,13 @@ class PlayCardsState(GameState):
 
             edition = Edition.objects.filter(name=self.info.edition)
             p = Province.objects.get(edition=edition, short_name=params['target'])
+
             if p.province_type == Province.CAPITAL or p.area == AREA_NEW_WORLD :
-                pass
-            pass
+                raise Action.InvalidParameter("'target' cannot be a Capital or New World")
+
+            self.info.clear_marker_removal()
+            self.info.add_marker_removal(p.short_name)
+            self.info.resolve_marker_removal()
         elif card =='E25_rel':
             # All players increase Misery one space for each Religion Advance [E,F,G,H] they hold. 
             # Voids PAPAL DECREE, if played in the same turn. 
