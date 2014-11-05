@@ -618,6 +618,13 @@ class GameInfo(object):
     def clear_marker_removal(self):
         self.marker_removal = {}
 
+    def epoch1_ma_voided(self):
+        for e in range(1, 4) :
+            for c in ('E18_gun', 'E19_bow'):
+                if c in self.info.card_log['epoch_' + str(e)] :
+                    return True
+        return False
+
     class ProvinceNotFound(Exception):
         def __init__(self, message):
             self.message = message
@@ -1442,14 +1449,13 @@ class PlayCardsState(GameState):
             # A player of your choice may pay half of written cash to Banker. Penalty cannot exceed current cash. 
             # Cash already spent on Patronage defense is not vulnerable. Voided by LAWS OF MATTER. 
             # If all players have LAWS OF MATTER, this card becomes unplayable Misery burden.                                    
-            # TODO apply self.info.enlightened_ruler
             if 'target' not in params.keys() :
                 raise Action.InvalidParameter("'Alchemist's Gold' requires 'target' parameter.")
             if self.info.is_valid_player( params['target'] ) == False :
                 raise Action.InvalidParameter("Player '" + params['target'] + "' is not in the game.")
 
             h = self.info.getHouseInfo(params['target'])
-            if 'C' in h.advances.keys():
+            if 'C' in h.advances.keys() or self.info.enlightened_ruler == params['target'] :
                 raise Action.InvalidParameter( \
                         "You cannot play 'Alchemist's Gold' on player '" + params['target'] + "'."
                 )
@@ -1467,7 +1473,8 @@ class PlayCardsState(GameState):
             # You win all Attack ties this turn (including WAR). 
             # Add 1 to your competition totals this turn on both offense and defense. Voided by LONG BOW or GUNPOWDER. 
             # If voided, ARMOR becomes unplayable Misery burden.                                 
-            # TODO void check
+            if self.info.epoch1_ma_voided() == True :
+                raise Action.InvalidParameter("You cannot play 'Armor' any more.")
             self.info.armor = user_id
         elif card =='E13_B':
             # Select one Area to be hit by the plague. 
@@ -1501,11 +1508,12 @@ class PlayCardsState(GameState):
             # He must lose his choice of half of his last recorded cash or half of his bid tokens (squares). 
             # At start of the Expansion Phase, his Order of play position becomes "last".                                  
 
-            # TODO apply self.info.enlightened_ruler
             if 'target' not in params.keys() :
                 raise Action.InvalidParameter("'Civil War' requires 'target' parameter.")
             if self.info.is_valid_player( params['target'] ) == False :
                 raise Action.InvalidParameter("Player '" + params['target'] + "' is not in the game.")
+            if self.info.enlightened_ruler == params['target'] :
+                raise Action.InvalidParameter("You cannot play 'Civil War' on player '" + params['target'] + "'.")
 
             # 대상 플레이어가 토큰과 캐시 중 하나를 선택한 다음, 모든 값을 조정한다.
             self.info.state = params['target'] + '.' + GameState.RESOLVE_CIVIL_WAR + '.' + self.info.state
@@ -1575,7 +1583,6 @@ class PlayCardsState(GameState):
         elif card =='E20_mys':
             # All players gain four spaces on the Misery Index minus one space for each Science Advance [A,B,C,D] held. 
             # This card becomes a worthless Misery burden if all players own all four Sciences [A,B,C,D]. 
-            # TODO apply self.info.enlightened_ruler
             edition = Edition.objects.filter(name=self.info.edition)
             advances = Advanc.objects.filter(edition=edition).filter(category=Advance.SCIENCE)
             science_advances = []
@@ -1586,6 +1593,8 @@ class PlayCardsState(GameState):
 
             for key in self.info.houses:
                 h = self.info.getHouseInfo(key)
+                if self.info.enlightened_ruler == h.user_id: 
+                    continue
                 dev_set = set(h.advances).intersection(science_advances_set)
                 h.adjust_misery(len(science_advances_set) - len(dev_set))
                 sum_misery_level += len(science_advances_set) - len(dev_set) 
@@ -1669,7 +1678,6 @@ class PlayCardsState(GameState):
         elif card =='E24_reb':
             # Local conflict occurs in any province of your choice except the New World and foreign capitals. 
             # Any Colored Dominance Marker (circle) in that province is reduced to a Colored Token (square).
-            # TODO apply self.info.enlightened_ruler
             if 'target' not in params.keys() :
                 raise Action.InvalidParameter("'Rebellion' requires 'target' parameter.")
 
@@ -1679,6 +1687,11 @@ class PlayCardsState(GameState):
             if p.province_type == Province.CAPITAL or p.area == AREA_NEW_WORLD :
                 raise Action.InvalidParameter("'target' cannot be a Capital or New World")
 
+            p_info = self.get_province(p.short_name)
+
+            if "color-marker" not in p_info or elf.info.enlightened_ruler == p_info["color-marker"] : 
+                raise Action.InvalidParameter("You cannot play 'Rebellion' on '" + params['target'] + "'.")
+
             self.info.clear_marker_removal()
             self.info.add_marker_removal(p.short_name)
             self.info.resolve_marker_removal()
@@ -1686,7 +1699,6 @@ class PlayCardsState(GameState):
             # All players increase Misery one space for each Religion Advance [E,F,G,H] they hold. 
             # Voids PAPAL DECREE, if played in the same turn. 
             # If played in Epoch 3, the PAPAL DECREE card becomes an unplayable Misery burden.                                 
-            # TODO apply self.info.enlightened_ruler
 
             edition = Edition.objects.filter(name=self.info.edition)
             advances = Advanc.objects.filter(edition=edition).filter(category=Advance.RELIGION)
@@ -1697,6 +1709,8 @@ class PlayCardsState(GameState):
 
             for key in self.info.houses:
                 h = self.info.getHouseInfo(key)
+                if self.info.enlightened_ruler == h.user_id: 
+                    continue
                 dev_set = set(h.advances).intersection(religion_advances_set)
                 h.adjust_misery(len(dev_set))
 
@@ -1704,7 +1718,6 @@ class PlayCardsState(GameState):
             self.papal_decree = []
         elif card =='E26_rev':
             # Each player gains one space on the Misery Index for each Commerce Advance [I,J,K,L,M] he holds.
-            # TODO apply self.info.enlightened_ruler
             edition = Edition.objects.filter(name=self.info.edition)
             advances = Advanc.objects.filter(edition=edition).filter(category=Advance.COMMERCE)
             commerce_advances = []
@@ -1714,6 +1727,8 @@ class PlayCardsState(GameState):
 
             for key in self.info.houses:
                 h = self.info.getHouseInfo(key)
+                if self.info.enlightened_ruler == h.user_id: 
+                    continue
                 dev_set = set(h.advances).intersection(commerce_advances_set)
                 h.adjust_misery(len(dev_set))
         elif card =='E27_sti':
@@ -1722,7 +1737,9 @@ class PlayCardsState(GameState):
             # Add 1 to all your competition totals this turn on both offense and defense, 
             # except against player currently using ARMOR. 
             # Voided by LONG BOW or GUNPOWDER. If voided, STIRRUPS becomes unplayable Misery burden.
-            # TODO void check
+            if self.info.epoch1_ma_voided() == True :
+                raise Action.InvalidParameter("You cannot play 'Stirrups' any more.")
+
             self.info.stirrups = user_id
         elif card =='E28_war':
             # Declare WAR on any player. Each player rolls 1 die. 
