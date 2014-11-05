@@ -349,6 +349,7 @@ class GameInfo(object):
             'winner': None,
             'loser': None,
             'difference': None,
+            'available_provinces': None,
         }
 
     def get_house_choice_order(self, player) :
@@ -1350,6 +1351,7 @@ class PlayCardsState(GameState):
                 self.info.getHouseInfo(self.info.war['attacker']).adjust_misery(1)
                 self.info.getHouseInfo(self.info.war['defender']).adjust_misery(1)
             else :
+                # 어느 한 쪽의 승리
                 if mod[self.info.war['attacker']] >= mod[self.info.war['defender']]:
                     # MA가 있어야 mod 값이 같은 경우에 이 곳에 진입할 수 있으므로, 
                     # 여기에서는 >= 로 비교해도 충분하다. 
@@ -1362,10 +1364,11 @@ class PlayCardsState(GameState):
                 self.info.getHouseInfo(self.info.war['winner']).adjust_misery(1)
                 self.info.getHouseInfo(self.info.war['loser']).adjust_misery(2)
                 self.info.war['difference'] = mod[self.info.war['winner']] - mod[self.info.war['loser']]
-                if self.info.war['difference'] > 0 :
-                    self.info.state = self.info.war['loser'] + '.' + GameState.POST_WAR + '.' + self.info.state
-                else :
+                self.info.war['available_provinces'] = []
+                if self.info.war['difference'] == 0 :
                     self.info.reset_war_info()
+                else :
+                    self.info.state = self.info.war['loser'] + '.' + GameState.POST_WAR + '.' + self.info.state
 
             response['random'] = rand_dict
             return response
@@ -1760,6 +1763,21 @@ class PlayCardsState(GameState):
 
 class PostWarState(GameState):
     def action(self, a, user_id=None, params={}):
+        if a == Action.CHOOSE :
+            if user_id != self.actor :
+                raise GameState.InvalidAction( "Not user '" + user_id + "' turn")
+            if 'choice' not in params.keys() :
+                raise Action.InvalidParameter(Action.CHOOSE + " requires 'choice' parameter.")
+
+            choice = params['choice']
+
+            #if self.info.privinces[choice] != user_id:
+                #raise Action.InvalidParameter("'" + choice + "' is not your province.")
+#
+            #edition = Edition.objects.filter(name=self.info.edition)
+            #province = Province.objects.get(edition=edition, short_name=params['target'])
+# TODO
+            pass
         return super(PostWarState, self).action(a, params)
 
 class ResolveCivilWarState(GameState):
