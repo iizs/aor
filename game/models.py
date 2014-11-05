@@ -277,11 +277,7 @@ class GameInfo(object):
         self.card_log['epoch_1'] = {}
         self.card_log['epoch_2'] = {}
         self.card_log['epoch_3'] = {}
-        self.war = {
-            'attacker' : None,
-            'defender' : None,
-            'last_rolled_state' : None,
-        }
+        self.reset_war_info()
         self.leader = {
             'stack' : [],
             'player' : {},
@@ -347,6 +343,16 @@ class GameInfo(object):
         self.crusades = None
         if self.epoch != 3 :
             self.religious_strife = False
+
+    def reset_war_info(self):
+        self.war = {
+            'attacker' : None,
+            'defender' : None,
+            'last_rolled_state' : None,
+            'winner': None,
+            'loser': None,
+            'difference': None,
+        }
 
     def get_house_choice_order(self, player) :
         for i in range(len(self.house_bidding_log)):
@@ -1274,7 +1280,91 @@ class PlayCardsState(GameState):
             return response
 
         elif a == Action.RESOLVE_WAR:
-            pass
+            # Each player rolls 1 die. 
+            # [W] Nationalism & Military Advantages modify their owner's die roll by +1 (each). 
+            # Highest total gains one Misery, lowest total gains two Misery. 
+            # The difference between the modified die rolls is the amount of supportable 
+            # Colored Dominance Markers (circles) the loser must cede to the winner (loser's choice). 
+            # If tied, both sides gain one Misery and continue resolution in each succeeding round of 
+            # the Play Cards Phase until one side wins.                                 
+            # 
+            # 참고
+            # http://boardgamegeek.com/thread/1125054/military-advantages-stacking
+            # http://boardgamegeek.com/thread/514950/again-war-card
+            # http://boardgamegeek.com/thread/299484/war-card
+            response = {}
+            rand_dict = params['random'] if 'random' in params.keys() else {}
+
+            if 'attacker' not in rand_dict:
+                rand_dict['attacker'] = roll_dice()
+
+            if 'defender' not in rand_dict:
+                rand_dict['defender'] = roll_dice()
+
+            mod = {}
+            mod[self.info.war['attacker']] = rand_dict['attacker'] 
+            mod[self.info.war['defender']] = rand_dict['defender'] 
+
+            for p in mod:
+                h = self.info.getHouseInfo(p)
+                if 'W' in h.advances:
+                    mod[p] += 1
+
+            has_lg = { self.info.war['attacker'] : False, self.info.war['defender'] : False }
+            has_ma = { self.info.war['attacker'] : False, self.info.war['defender'] : False }
+
+            if self.info.gunpowder in mod:
+                has_lg[self.info.gunpowder] = True
+                has_ma[self.info.gunpowder] = True
+                mod[self.info.gunpowder] += 1
+
+            if self.info.longbow in mod:
+                has_lg[self.info.longbow] = True
+                has_ma[self.info.gunpowder] = True
+                mod[self.info.longbow] += 1
+
+            if self.info.stirrups == self.info.war['attacker'] and has_lg[self.info.war['defender']] == False :
+                mod[self.info.war['attacker']] += 1
+                has_ma[self.info.war['attacker']] = True
+
+            if self.info.armor == self.info.war['attacker'] and has_lg[self.info.war['defender']] == False :
+                mod[self.info.war['attacker']] += 1
+                has_ma[self.info.war['attacker']] = True
+
+            if self.info.stirrups == self.info.war['defender'] and has_lg[self.info.war['attacker']] == False :
+                mod[self.info.war['defender']] += 1
+                has_ma[self.info.war['defender']] = True
+
+            if self.info.armor == self.info.war['defender'] and has_lg[self.info.war['attacker']] == False :
+                mod[self.info.war['defender']] += 1
+                has_ma[self.info.war['defender']] = True
+
+            self.info.war['last_rolled_state'] = self.info.state
+            if has_ma[self.info.war['attacker']] == False \
+                and mod[self.info.war['attacker']] == mod[self.info.war['defender']] :
+                # 비김 
+                self.info.getHouseInfo(self.info.war['attacker']).adjust_misery(1)
+                self.info.getHouseInfo(self.info.war['defender']).adjust_misery(1)
+            else :
+                if mod[self.info.war['attacker']] >= mod[self.info.war['defender']]:
+                    # MA가 있어야 mod 값이 같은 경우에 이 곳에 진입할 수 있으므로, 
+                    # 여기에서는 >= 로 비교해도 충분하다. 
+                    self.info.war['winner'] = self.info.war['attacker']
+                    self.info.war['loser'] = self.info.war['defender']
+                else :
+                    self.info.war['winner'] = self.info.war['defender']
+                    self.info.war['loser'] = self.info.war['attacker']
+
+                self.info.getHouseInfo(self.info.war['winner']).adjust_misery(1)
+                self.info.getHouseInfo(self.info.war['loser']).adjust_misery(2)
+                self.info.war['difference'] = mod[self.info.war['winner']] - mod[self.info.war['loser']]
+                if self.info.war['difference'] > 0 :
+                    self.info.state = self.info.war['loser'] + '.' + GameState.POST_WAR + '.' + self.info.state
+                else :
+                    self.info.reset_war_info()
+
+            response['random'] = rand_dict
+            return response
         return super(PlayCardsState, self).action(a, params)
 
     def war_resolved(self):
@@ -1352,6 +1442,7 @@ class PlayCardsState(GameState):
             # A player of your choice may pay half of written cash to Banker. Penalty cannot exceed current cash. 
             # Cash already spent on Patronage defense is not vulnerable. Voided by LAWS OF MATTER. 
             # If all players have LAWS OF MATTER, this card becomes unplayable Misery burden.                                    
+            # TODO apply self.info.enlightened_ruler
             if 'target' not in params.keys() :
                 raise Action.InvalidParameter("'Alchemist's Gold' requires 'target' parameter.")
             if self.info.is_valid_player( params['target'] ) == False :
@@ -1376,6 +1467,7 @@ class PlayCardsState(GameState):
             # You win all Attack ties this turn (including WAR). 
             # Add 1 to your competition totals this turn on both offense and defense. Voided by LONG BOW or GUNPOWDER. 
             # If voided, ARMOR becomes unplayable Misery burden.                                 
+            # TODO void check
             self.info.armor = user_id
         elif card =='E13_B':
             # Select one Area to be hit by the plague. 
@@ -1409,6 +1501,7 @@ class PlayCardsState(GameState):
             # He must lose his choice of half of his last recorded cash or half of his bid tokens (squares). 
             # At start of the Expansion Phase, his Order of play position becomes "last".                                  
 
+            # TODO apply self.info.enlightened_ruler
             if 'target' not in params.keys() :
                 raise Action.InvalidParameter("'Civil War' requires 'target' parameter.")
             if self.info.is_valid_player( params['target'] ) == False :
@@ -1482,6 +1575,7 @@ class PlayCardsState(GameState):
         elif card =='E20_mys':
             # All players gain four spaces on the Misery Index minus one space for each Science Advance [A,B,C,D] held. 
             # This card becomes a worthless Misery burden if all players own all four Sciences [A,B,C,D]. 
+            # TODO apply self.info.enlightened_ruler
             edition = Edition.objects.filter(name=self.info.edition)
             advances = Advanc.objects.filter(edition=edition).filter(category=Advance.SCIENCE)
             science_advances = []
@@ -1575,6 +1669,7 @@ class PlayCardsState(GameState):
         elif card =='E24_reb':
             # Local conflict occurs in any province of your choice except the New World and foreign capitals. 
             # Any Colored Dominance Marker (circle) in that province is reduced to a Colored Token (square).
+            # TODO apply self.info.enlightened_ruler
             if 'target' not in params.keys() :
                 raise Action.InvalidParameter("'Rebellion' requires 'target' parameter.")
 
@@ -1591,6 +1686,7 @@ class PlayCardsState(GameState):
             # All players increase Misery one space for each Religion Advance [E,F,G,H] they hold. 
             # Voids PAPAL DECREE, if played in the same turn. 
             # If played in Epoch 3, the PAPAL DECREE card becomes an unplayable Misery burden.                                 
+            # TODO apply self.info.enlightened_ruler
 
             edition = Edition.objects.filter(name=self.info.edition)
             advances = Advanc.objects.filter(edition=edition).filter(category=Advance.RELIGION)
@@ -1608,6 +1704,7 @@ class PlayCardsState(GameState):
             self.papal_decree = []
         elif card =='E26_rev':
             # Each player gains one space on the Misery Index for each Commerce Advance [I,J,K,L,M] he holds.
+            # TODO apply self.info.enlightened_ruler
             edition = Edition.objects.filter(name=self.info.edition)
             advances = Advanc.objects.filter(edition=edition).filter(category=Advance.COMMERCE)
             commerce_advances = []
@@ -1625,6 +1722,7 @@ class PlayCardsState(GameState):
             # Add 1 to all your competition totals this turn on both offense and defense, 
             # except against player currently using ARMOR. 
             # Voided by LONG BOW or GUNPOWDER. If voided, STIRRUPS becomes unplayable Misery burden.
+            # TODO void check
             self.info.stirrups = user_id
         elif card =='E28_war':
             # Declare WAR on any player. Each player rolls 1 die. 
