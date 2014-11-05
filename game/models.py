@@ -258,7 +258,6 @@ class GameInfo(object):
         self.num_players = 0
 
         self.houses = {}
-        self.players_map = {}
 
         self.play_order = []
         self.play_order_tie_break = {}
@@ -311,11 +310,9 @@ class GameInfo(object):
 
     def getHouseInfo(self, key):
         try:
-            if key in self.houses:
-                return self.houses[key]
-            return self.houses[ self.players_map[ key ] ]
+            return self.houses[key]
         except KeyError as e:
-            raise GameInfo.HouseNotFound("'" + key  + "' is not a valid house / player name.")
+            raise GameInfo.HouseNotFound("'" + key  + "' is not a valid player name.")
 
     def getTurnLog(self, key, turn=None):
         ''' turn is 1-based '''
@@ -362,7 +359,7 @@ class GameInfo(object):
         return None
 
     def is_valid_player(self, player):
-        return player in self.info.players_map.keys()
+        return player in self.info.houses.keys()
 
     def clear_play_order(self):
         self.play_order = []
@@ -544,9 +541,9 @@ class GameInfo(object):
                 raise GameInfo.NotEnoughTokens( "You have only " + str(h.stock_tokens) + " tokens" )
             h.stock_tokens -= num_tokens
 
-        if h.house_name not in p[k]:
-            p[k][h.house_name] = 0
-        p[k][h.house_name] += num_tokens
+        if h.user_id not in p[k]:
+            p[k][h.user_id] = 0
+        p[k][h.user_id] += num_tokens
 
     def remove_tokens(self, province_name):
         p = self.get_province(province_name)
@@ -573,7 +570,7 @@ class GameInfo(object):
         if h.dominance_marker == 0 :
             raise GameInfo.NotEnoughDominanceMarker("No dominance marker left")
 
-        p[k] = h.house_name
+        p[k] = h.user_id
         h.dominance_marker -= 1
 
     def remove_marker(self, province_name):
@@ -594,9 +591,9 @@ class GameInfo(object):
 
         if "color-marker" in p:
             h = self.getHouseInfo(p["color-marker"])
-            if h.house_name not in self.marker_removal:
-                self.marker_removal[h.house_name] = []
-            self.marker_removal[h.house_name].append(province_name)
+            if h.user_id not in self.marker_removal:
+                self.marker_removal[h.user_id] = []
+            self.marker_removal[h.user_id].append(province_name)
         else:
             raise MarkerNotFound("No dominance marker found on '" + province_name + "'")
 
@@ -611,7 +608,7 @@ class GameInfo(object):
 
         if self.info.marker_removal:
             for key in self.info.play_order:
-                if self.info.players_map[key] in self.info.marker_removal:
+                if key in self.info.marker_removal:
                     # 앞 순서의 player부터 token 사용 여부를 결정하도록 한다.
                     self.info.state = key + '.' + GameInfo.REMOVE_MARKER + '.' + self.info.state
 
@@ -955,8 +952,9 @@ class ChooseCapitalState(GameState):
             response = {}
 
             available = list(GameInfo.HOUSES[0:self.info.num_players])
-            for h in self.info.houses.keys():
-                available.remove(h)
+            for key in self.info.houses.keys():
+                h = self.info.getHouseInfo(key)
+                available.remove(h.house_name)
 
             if choice not in available:
                 raise Action.InvalidParameter("'" + choice + "' is already chosen or not allowed.")
@@ -969,8 +967,7 @@ class ChooseCapitalState(GameState):
                     hands = list(bidinfo.draw_cards),
                     cash = 40 - bidinfo.bid,
             )
-            self.info.houses[choice] = h
-            self.info.players_map[user_id] = choice
+            self.info.houses[user_id] = h
             self.info.set_marker(choice, user_id, colored=True)
 
             # 마지막 플레이어만 남았다면 자동으로 남은 수도를 선택하도록 함
@@ -991,7 +988,7 @@ class ChooseCapitalState(GameState):
                 self.info.epoch = 1
                 self.info.turn = 1
                 for key in self.info.houses:
-                    self.info.houses[key].prepare_new_turn(self.info.turn)
+                    self.info.getHouseInfo(key).prepare_new_turn(self.info.turn)
 
             return response
         else:
@@ -1005,7 +1002,7 @@ class TokenBiddingState(GameState):
             return {}
         elif a == Action.POST_PHASE :
             for key in self.info.houses:
-                h = self.info.houses[key]
+                h = self.info.getHouseInfo(key)
                 l = h.turn_logs[self.info.turn - 1]
                 h.cash = l.cash - abs(l.tokens)
 
@@ -1023,14 +1020,14 @@ class TokenBiddingState(GameState):
                 raise Action.InvalidParameter(Action.BID + " requires 'used_id'")
             if 'bid' not in params.keys() :
                 raise Action.InvalidParameter(Action.BID + " requires 'bid' parameter.")
-            hinfo = self.info.houses[ self.info.players_map[user_id] ]
+            hinfo = self.info.getHouseInfo(user_id)
             turn_log = hinfo.turn_logs[ self.info.turn - 1 ]
             turn_log.tokens = int(params['bid'])
 
             # preceed to determine order ? 
             bidding_complete = True
             for key in self.info.houses:
-                hinfo = self.info.houses[ key ]
+                hinfo = self.info.getHouseInfo(key)
                 if hinfo.turn_logs[ self.info.turn - 1 ].tokens == None:
                     bidding_complete = False
                     break
@@ -1041,7 +1038,7 @@ class TokenBiddingState(GameState):
 
             return response
         elif a == Action.DETERMINE_ORDER :
-            p_list = list(self.info.players_map.keys())
+            p_list = list(self.info.houses.keys())
 
             tie_break = self.info.play_order_tie_break
             if not tie_break:
