@@ -8,7 +8,7 @@ import random
 
 from player.models import Player
 from rule.models import Edition, HistoryCard, EventCard, LeaderCard, CommodityCard, Province, Commodity, Water
-from rule.models import AREA_FAR_EAST, AREA_NEW_WORLD, AREA_VI
+from rule.models import AREA_FAR_EAST, AREA_NEW_WORLD, AREA_VI, AREA_I, AREA_II, AREA_III
 
 class GetOrNoneManager(models.Manager):
     """Adds get_or_none method to objects
@@ -623,6 +623,24 @@ class GameInfo(object):
                     return True
         return False
 
+    def get_accessible_provinces(self, include_overland_east=True, include_far_east=True, include_new_world=True):
+        edition = Edition.objects.filter(name=self.edition)
+        provinces = Province.objects.all()
+        if self.num_players < 6 :
+            provinces = provinces.exclude(area=AREA_I)
+        if self.num_players < 5 :
+            provinces = provinces.exclude(area=AREA_II)
+        if self.num_players < 4 :
+            provinces = provinces.exclude(area=AREA_III)
+        if include_overland_east == False :
+            provinces = provinces.exclude(area=AREA_VI)
+        if include_far_east == False :
+            provinces = provinces.exclude(area=AREA_FAR_EAST)
+        if include_new_world == False :
+            provinces = provinces.exclude(area=AREA_NEW_WORLD)
+
+        return provinces
+
     class ProvinceNotFound(Exception):
         def __init__(self, message):
             self.message = message
@@ -813,8 +831,7 @@ class InitState(GameState):
                 h.draw_cards.append(self.info.draw_stack.pop())
 
             edition = Edition.objects.filter(name__exact=self.info.edition)
-            all_provinces = Province.objects                    \
-                            .filter(edition__exact=edition) 
+            all_provinces = self.info.get_accessible_provinces()
             for p in all_provinces:
                 self.info.provinces[p.short_name] = { }
 
@@ -1368,7 +1385,29 @@ class PlayCardsState(GameState):
                 if self.info.war['difference'] == 0 :
                     self.info.reset_war_info()
                 else :
-                    self.info.state = self.info.war['loser'] + '.' + GameState.POST_WAR + '.' + self.info.state
+                    h_winner = self.info.getHouseInfo(self.info.war['winner'])
+                    h_loser = self.info.getHouseInfo(self.info.war['loser'])
+                    p_list = []
+                    for key in self.info.provinces:
+                        p = self.info.provinces[key]
+                        if p['color-marker'] == h_winner.user_id : 
+                            p_list.append(key)
+
+                    accessible_p_list = self.info.get_accessible_provinces(
+                                            include_overland_east= 'R' in h_winner.advances, 
+                                            include_far_east= 'T' in h_winner.advances, 
+                                            include_new_world= 'U' in h_winner.advances
+                    )
+
+                    self.info.war['available_provinces'] = list(set(p_list).intersection(set(accessible_p_list)))
+                    if len(self.info.war['available_provinces']) <= self.info.war['difference'] :
+                        # 넘겨줄 수 있는 province가 넘겨주어야 하는 province 보다 적거나 같으면
+                        # 그 province들만 모두 넘겨주고 상황을 종료한다. 
+                        for p in self.info.war['available_provinces'] :
+                            self.info.set_marker(p, self.info.war['winner'], colored=True)
+                        self.info.reset_war_info()
+                    else:
+                        self.info.state = self.info.war['loser'] + '.' + GameState.POST_WAR + '.' + self.info.state
 
             response['random'] = rand_dict
             return response
@@ -1402,7 +1441,7 @@ class PlayCardsState(GameState):
 
         owners = {}
         for p in provinces:
-            if "color-marker" in self.info.provinces[p.short_name] :
+            if p.short_name in self.info.provinces and "color-marker" in self.info.provinces[p.short_name] :
                 owner = self.info.provinces[p.short_name]["color-marker"]
                 if owner not in owners:
                     owners[owner] = 0
@@ -1770,15 +1809,22 @@ class PostWarState(GameState):
                 raise Action.InvalidParameter(Action.CHOOSE + " requires 'choice' parameter.")
 
             choice = params['choice']
+            
+            choice_refined = list(set(choice).intersection(set(self.info.war['available_provinces'])))
 
-            #if self.info.privinces[choice] != user_id:
-                #raise Action.InvalidParameter("'" + choice + "' is not your province.")
-#
-            #edition = Edition.objects.filter(name=self.info.edition)
-            #province = Province.objects.get(edition=edition, short_name=params['target'])
-# TODO
-            pass
-        return super(PostWarState, self).action(a, params)
+            if len(choice) != len(choice_refined) :
+                raise Action.InvalidParameter("'choice' must contains cedible provinces only.")
+
+            if len(choice_refined) != self.info.war['difference'] :
+                raise Action.InvalidParameter("You must cede " +  str(self.info.war['difference']) + " provinces.")
+
+            for p in choice_refined :
+                self.info.set_marker(p, self.info.war['winner'], colored=True)
+            self.info.reset_war_info()
+            self.info.state = self.depends_on
+        else :
+            return super(PostWarState, self).action(a, params)
+        return {}
 
 class ResolveCivilWarState(GameState):
     def action(self, a, user_id=None, params={}):
