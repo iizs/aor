@@ -1828,13 +1828,52 @@ class PostWarState(GameState):
 
 class ResolveCivilWarState(GameState):
     def action(self, a, user_id=None, params={}):
-        #h.adjust_misery( 1 )
-        #self.info.civil_war = params['target']
-        return super(PostWarState, self).action(a, params)
+        # A player of your choice is struck by CIVIL WAR. He gains one Misery. 
+        # Any Dominance Marker (circle) in his Capital is reduced to a Colored Token (square). 
+        # He must lose his choice of half of his last recorded cash or half of his bid tokens (squares). 
+        # At start of the Expansion Phase, his Order of play position becomes "last".                                  
+        if a == Action.CHOOSE :
+            if user_id != self.actor :
+                raise GameState.InvalidAction( "Not user '" + user_id + "' turn")
+            if 'choice' not in params.keys() :
+                raise Action.InvalidParameter(Action.CHOOSE + " requires 'choice' parameter.")
+            if params['choice'] not in ('token', 'cash') :
+                raise Action.InvalidParameter("'choice' parameter must be either 'token' or 'cash'")
+
+            h = self.info.getHouseInfo(user_id)
+
+            h.adjust_misery( 1 )
+            if params['choice'] == 'token' :
+                penalty = ( h.expansion_tokens + 1 ) / 2 # 0.5 는 반올림하기 위해서, wc + 1 을 2로 나눔
+                h.stock_tokens += penalty
+                h.expansion_tokens -= penalty
+            else :
+                l = self.info.getTurnLog(user_id)
+                penalty = ( h.cash + 1 ) / 2 # 0.5 는 반올림하기 위해서, wc + 1 을 2로 나눔
+                h.cash -= penalty
+                l.card_damage += penalty
+            
+            capital = self.info.provinces[h.house_name]
+            self.info.state = self.depends_on
+            if 'color-marker' in capital:
+                if capital['color-marker'] == h.house_name : 
+                    # 수도를 보유하고 있음. 
+                    # stock token 으로 채우거나, 비워둠
+                    self.info.remove_marker(h.house_name)
+                    if h.stock_tokens > 0 :
+                        self.info.add_tokens(h.house_name, user_id, 1, from_expansion=False, colored=True)
+                else :
+                    # 수도를 점령당한 상태. 
+                    # 점령중인 player가 결정해야 함
+                    self.info.clear_marker_removal()
+                    self.info.add_marker_removal(h.house_name)
+                    self.info.resolve_marker_removal()
+        else :
+            return super(PostWarState, self).action(a, params)
+        return {}
 
 class RemoveMarkerState(GameState):
     def action(self, a, user_id=None, params={}):
-        #h.adjust_misery( 1 )
         #self.info.civil_war = params['target']
         return super(RemoveMarkerState, self).action(a, params)
 
