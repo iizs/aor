@@ -1459,7 +1459,7 @@ class PlayCardsState(GameState):
             l.card_income += income
             h.cash += income
 
-        self.info.card_log['epoch_' + str(self.info.epoch)][card] = self.info.turn
+        self.info.card_log['epoch_' + str(self.info.epoch)][card] = str(self.info.epoch) + "." + str(self.info.turn)
         return response
 
     def play_leader_card(self, card, user_id):
@@ -1802,7 +1802,7 @@ class PlayCardsState(GameState):
             self.info.war['defender'] = params['target']
             response['queue_action'] = { 'action': Action.RESOLVE_WAR, '_player': user_id }
 
-        self.info.card_log['epoch_' + str(self.info.epoch)][card] = self.info.turn
+        self.info.card_log['epoch_' + str(self.info.epoch)][card] = str(self.info.epoch) + "." + str(self.info.turn)
         return response
 
 class PostWarState(GameState):
