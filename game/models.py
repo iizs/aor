@@ -169,6 +169,13 @@ class HouseBiddingLog(object):
         self.discard_card = None
         self.dice_rolled = []
 
+    def mask(self, user_id, bid_in_progress):
+        if self.user_id != user_id:
+            self.draw_cards = []
+            self.discard_card = None
+            if bid_in_progress == True:
+                self.bid = None
+
 # house name
 class HouseTurnLog(object):
     def __init__(self, turn=0, cash=0):
@@ -188,7 +195,16 @@ class HouseTurnLog(object):
         return self.cash - abs( self.token );
 
     #def current_cash(self):
-
+    def mask(self, bid_in_progress):
+        if bid_in_progress == True:
+            self.tokens = None
+        self.card_income = 0
+        self.card_damage = 0
+        self.buy_card = False
+        self.ship_upgrade = False
+        self.buy_advance = 0
+        self.card_stabilization = 0
+        self.tax = 0
 
 class HouseInfo(object):
     SHIP_GALLEY = 'galley'
@@ -209,6 +225,17 @@ class HouseInfo(object):
         self.ship_capacity = 0
         self.turn_logs = []
         self.chaos_out = False
+
+    def mask(self, user_id, turn, bid_in_progress):
+        if self.user_id != user_id:
+            self.hands = None
+            self.cash = None
+
+            for l in self.turn_logs :
+                if l.turn != turn:
+                    l.mask(False)
+                else :
+                    l.mask(bid_in_progress)
 
     def prepare_new_turn(self, turn):
         self.stock_tokens += self.expansion_tokens
@@ -307,6 +334,16 @@ class GameInfo(object):
                 h = HouseBiddingLog()
                 h.user_id = p.user_id
                 self.house_bidding_log.append(h)
+
+    def mask(self, user_id):
+        self.draw_stack = []
+        bid_in_progress = self.state == GameState.ALL + '.' + GameState.TOKEN_BIDDING
+        for key in self.houses:
+            self.houses[key].mask(user_id, self.turn, bid_in_progress)
+
+        bid_in_progress = self.state == GameState.ALL + '.' + GameState.HOUSE_BIDDING
+        for l in self.house_bidding_log:
+            l.mask(user_id, bid_in_progress)
 
     def getHouseInfo(self, key):
         try:

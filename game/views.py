@@ -181,6 +181,9 @@ def get_info(request):
             response_data['last_lsn'] = g.last_lsn
             response_data['success'] = True
 
+        if request.GET['user_id'] != "admin":
+            response_data['info'].mask(request.GET['user_id'])
+
     except (MultiValueDictKeyError, Game.DoesNotExist) as e:
         response_data['success'] = False
         response_data['errmsg'] = type(e).__name__ + ": " + e.message
