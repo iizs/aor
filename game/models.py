@@ -607,11 +607,16 @@ class GameInfo(object):
                     self.info.add_tokens(p, n, 1, from_expansion=False, colored=True)
                 del self.info.marker_removal[n]
 
+        player = get_next_player_for_marker_removal()
+        if player != None:
+            self.info.state = player + '.' + GameInfo.REMOVE_MARKER + '.' + self.info.state
+
+    def get_next_player_for_marker_removal(self):
         if self.info.marker_removal:
             for key in self.info.play_order:
                 if key in self.info.marker_removal:
-                    # 앞 순서의 player부터 token 사용 여부를 결정하도록 한다.
-                    self.info.state = key + '.' + GameInfo.REMOVE_MARKER + '.' + self.info.state
+                    return key
+        return None
 
     def clear_marker_removal(self):
         self.marker_removal = {}
@@ -1874,8 +1879,61 @@ class ResolveCivilWarState(GameState):
 
 class RemoveMarkerState(GameState):
     def action(self, a, user_id=None, params={}):
-        #self.info.civil_war = params['target']
-        return super(RemoveMarkerState, self).action(a, params)
+        if a == Action.CHOOSE :
+            if user_id != self.actor :
+                raise GameState.InvalidAction( "Not user '" + user_id + "' turn")
+            if 'choice' not in params.keys() :
+                raise Action.InvalidParameter(Action.CHOOSE + " requires 'choice' parameter.")
+            choice = params['choice']
+
+            if type(choice) is not dict:
+                raise Action.InvalidParameter("Invalid 'choice' parameter.")
+
+            markers_to_remove = self.marker_removal[user_id]
+            count = { 'empty' : 0, 'stock' : 0, 'expansion' : 0 }
+
+            for key in choice:
+                if key not in markers_to_remove:
+                    raise Action.InvalidParameter("Dominance marker on '" + key + "' cannot be removed.")
+                if choice[key] not in ('empty', 'stock', 'expansion'):
+                    raise Action.InvalidParameter( \
+                            "Dominance marker removal option must be either 'empty', 'stock' or 'expansion'."   \
+                    )
+                count[choice[key]] += 1
+
+            h = self.info.getHouseInfo(user_id)
+            if h.stock_tokens < count['stock']:
+                raise Action.InvalidParameter(  \
+                        "Not enough stock tokens; you have " + str(h.stock_tokens)  \
+                        + ", required " + str(count['stock'])   \
+                )
+
+            if h.expansion_tokens < count['expansion']:
+                raise Action.InvalidParameter(  \
+                        "Not enough expansion tokens; you have " + str(h.expansion_tokens)  \
+                        + ", required " + str(count['expansion'])   \
+                )
+
+            # all clear! 
+            for key in choice: 
+                self.info.remove_marker(key)
+                if choice[key] == 'expansion':
+                    self.info.add_tokens(h.house_name, user_id, 1, from_expansion=True, colored=True)
+                elif choice[key] == 'stock':
+                    self.info.add_tokens(h.house_name, user_id, 1, from_expansion=False, colored=True)
+                self.marker_removal[user_id].remove(key)
+
+            if len(self.marker_removal[user_id]) == 0:
+                del self.marker_removal[user_id]
+                player = get_next_player_for_marker_removal()
+                if player != None:
+                    self.info.state = player + '.' + GameInfo.REMOVE_MARKER + '.' + self.depends_on
+                else: 
+                    self.info.clear_marker_removal()
+                    self.info.state = self.depends_on
+        else :
+            return super(RemoveMarkerState, self).action(a, params)
+        return {}
 
 class PurchaseState(GameState):
     def action(self, a, user_id=None, params={}):
